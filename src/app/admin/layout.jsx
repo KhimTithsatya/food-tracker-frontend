@@ -1,25 +1,33 @@
 "use client";
 
-import { useAuth } from "../../hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function AdminLayout({ children }) {
-  const { user, loading, isAdmin } = useAuth();
-  const router = useRouter();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
-      router.push("/login");
-    }
-  }, [user, loading, isAdmin]);
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-  if (loading) return <p>Loading...</p>;
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
+    if (role !== "admin") {
+      window.location.href = "/user";
+      return;
+    }
+
+    setReady(true);
+  }, []);
+
+  if (!ready) return <p className="p-6">Loading...</p>;
 
   return (
-    <div style={{ display: "flex" }}>
-      <aside>Admin Sidebar</aside>
-      <main>{children}</main>
+    <div className="min-h-screen flex">
+      <aside className="w-64 bg-white border-r p-4">Admin Menu</aside>
+      <main className="flex-1 p-6 bg-gray-100">{children}</main>
     </div>
   );
 }
