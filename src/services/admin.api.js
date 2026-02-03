@@ -1,6 +1,6 @@
 // frontend/src/services/admin.api.js
 
-const BASE_URL = "http://localhost:5000/api/admin";
+const BASE_URL = "http://localhost:5001/api/admin";
 
 function getToken() {
   if (typeof window === "undefined") return null;
