@@ -8,37 +8,42 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      const res = await fetch("http://localhost:5001/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const res = await fetch("http://localhost:5001/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
-      // save token + role
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-
-      // redirect by role
-      if (data.role === "admin") {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/user";
-      }
-    } catch (err) {
-      setError("Server not responding");
+    if (!res.ok) {
+      setError(data.message || "Login failed");
+      return;
     }
-  };
+
+    // ✅ save token + user info
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("admin", data.admin.role);
+
+    // ✅ redirect by role (handle ADMIN/USER or admin/user)
+    const role = String(data.user.role || "").toUpperCase();
+
+    if (role === "ADMIN") {
+      window.location.href = "/admin";
+    } else {
+      window.location.href = "/user";
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Server not responding");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">

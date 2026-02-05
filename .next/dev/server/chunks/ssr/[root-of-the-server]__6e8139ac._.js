@@ -25,7 +25,7 @@ function LoginPage() {
         e.preventDefault();
         setError("");
         try {
-            const res = await fetch("http://localhost:5000/api/login", {
+            const res = await fetch("http://localhost:5001/api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -40,16 +40,19 @@ function LoginPage() {
                 setError(data.message || "Login failed");
                 return;
             }
-            // save token + role
+            // ✅ save token + user info
             localStorage.setItem("token", data.token);
-            localStorage.setItem("role", data.role);
-            // redirect by role
-            if (data.role === "admin") {
+            localStorage.setItem("user", JSON.stringify(data.user));
+            localStorage.setItem("admin", data.admin.role);
+            // ✅ redirect by role (handle ADMIN/USER or admin/user)
+            const role = String(data.user.role || "").toUpperCase();
+            if (role === "ADMIN") {
                 window.location.href = "/admin";
             } else {
                 window.location.href = "/user";
             }
         } catch (err) {
+            console.error(err);
             setError("Server not responding");
         }
     };
@@ -63,7 +66,7 @@ function LoginPage() {
                     children: "Login"
                 }, void 0, false, {
                     fileName: "[project]/src/app/page.jsx",
-                    lineNumber: 46,
+                    lineNumber: 51,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -77,7 +80,7 @@ function LoginPage() {
                             onChange: (e)=>setEmail(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.jsx",
-                            lineNumber: 49,
+                            lineNumber: 54,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -88,7 +91,7 @@ function LoginPage() {
                             onChange: (e)=>setPassword(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.jsx",
-                            lineNumber: 56,
+                            lineNumber: 61,
                             columnNumber: 11
                         }, this),
                         error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -96,7 +99,7 @@ function LoginPage() {
                             children: error
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.jsx",
-                            lineNumber: 64,
+                            lineNumber: 69,
                             columnNumber: 21
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -104,24 +107,24 @@ function LoginPage() {
                             children: "Login"
                         }, void 0, false, {
                             fileName: "[project]/src/app/page.jsx",
-                            lineNumber: 66,
+                            lineNumber: 71,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/page.jsx",
-                    lineNumber: 48,
+                    lineNumber: 53,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/page.jsx",
-            lineNumber: 45,
+            lineNumber: 50,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/page.jsx",
-        lineNumber: 44,
+        lineNumber: 49,
         columnNumber: 5
     }, this);
 }
