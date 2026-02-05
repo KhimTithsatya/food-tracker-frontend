@@ -2,5 +2,5 @@
   "version": 3,
   "sources": [],
   "sections": [
-    {"offset": {"line": 14, "column": 0}, "map": {"version":3,"sources":["file:///Users/khimtithsatya/Food-tracker-app/frontend/src/app/page.jsx"],"sourcesContent":["export default function HomePage() {\n  return (\n    <main>\n      <h1>Welcome to Food Tracker</h1>\n    </main>\n  );\n}\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;kBACC,cAAA,8OAAC;sBAAG;;;;;;;;;;;AAGV"}}]
+    {"offset": {"line": 14, "column": 0}, "map": {"version":3,"sources":["file:///Users/khimtithsatya/Food-tracker-app/frontend/src/app/page.jsx"],"sourcesContent":["import { redirect } from \"next/navigation\";\n\nexport default function Home() {\n  redirect(\"/login\");\n}"],"names":[],"mappings":";;;;AAAA;AAAA;;AAEe,SAAS;IACtB,IAAA,iMAAQ,EAAC;AACX"}}]
 }

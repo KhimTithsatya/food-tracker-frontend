@@ -13,7 +13,7 @@ export default function FoodPage() {
   useEffect(() => {
     if (!token) return (window.location.href = "/");
 
-    fetch("http://localhost:5000/api/foods", {
+    fetch("http://localhost:5001/api/foods", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -24,8 +24,8 @@ export default function FoodPage() {
     e.preventDefault();
 
     const url = editId
-      ? `http://localhost:5000/api/foods/${editId}`
-      : "http://localhost:5000/api/foods";
+      ? `http://localhost:5001/api/foods/${editId}`
+      : "http://localhost:5001/api/foods";
 
     const method = editId ? "PUT" : "POST";
 
@@ -58,7 +58,7 @@ export default function FoodPage() {
   };
 
   const deleteFood = async (id) => {
-    await fetch(`http://localhost:5000/api/foods/${id}`, {
+    await fetch(`http://localhost:5001/api/foods/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`
