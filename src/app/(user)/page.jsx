@@ -2,32 +2,24 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001";
 
 export default function UserPage() {
-  const [loading, setLoading] = useState(true);
   const [meals, setMeals] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState("");
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  const user = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      return JSON.parse(localStorage.getItem("user") || "null");
-    } catch {
-      return null;
-    }
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    setToken(storedToken || "");
+    setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
 
   useEffect(() => {
-    // If not logged in, go back to login
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
+    if (!token) return;
 
     const load = async () => {
       setLoading(true);
