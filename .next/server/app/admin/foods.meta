@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/foods/layout,_N_T_/admin/foods/page,_N_T_/admin/foods"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/foods/__PAGE__",
+    "/admin/foods",
+    "/admin",
+    "/_index",
+    "/_head"
+  ]
+}

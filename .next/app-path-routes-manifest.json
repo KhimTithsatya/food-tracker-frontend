@@ -1,0 +1,19 @@
+{
+  "/(user)/dashboard/page": "/dashboard",
+  "/(user)/foods/page": "/foods",
+  "/(user)/meals/page": "/meals",
+  "/(user)/page": "/",
+  "/(user)/profile/page": "/profile",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/foods/page": "/admin/foods",
+  "/admin/meals/page": "/admin/meals",
+  "/admin/page": "/admin",
+  "/admin/reports/page": "/admin/reports",
+  "/admin/settings/page": "/admin/settings",
+  "/admin/users/page": "/admin/users",
+  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
+  "/login/page": "/login",
+  "/page": "/",
+  "/register/page": "/register"
+}
