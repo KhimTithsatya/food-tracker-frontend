@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../../../services/api";
 
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
