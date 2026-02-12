@@ -49,13 +49,13 @@ export default function LoginPage() {
         if (role === "ADMIN") {
           window.location.href = "/admin";
         } else {
-          window.location.href = "/user/dashboard";
+          window.location.href = "/dashboard";
         }
         return;
       }
 
       // If backend login failed but next-auth succeeded (unlikely), still go user
-      window.location.href = "/user/dashboard";
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
       setError("Server not responding");
@@ -66,7 +66,7 @@ export default function LoginPage() {
 
   const handleSocial = async (provider) => {
     setError("");
-    const result = await signIn(provider, { callbackUrl: "/user/dashboard" });
+    const result = await signIn(provider, { callbackUrl: "/dashboard" });
     if (result?.error) setError("Social login failed or not configured.");
   };
 

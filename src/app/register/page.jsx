@@ -41,7 +41,7 @@ export default function RegisterPage() {
         window.location.href = "/login";
         return;
       }
-      window.location.href = "/user/dashboard";
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
       setError("Server not responding");
@@ -52,7 +52,7 @@ export default function RegisterPage() {
 
   const handleSocial = async (provider) => {
     setError("");
-    const result = await signIn(provider, { callbackUrl: "/user/dashboard" });
+    const result = await signIn(provider, { callbackUrl: "/dashboard" });
     if (result?.error) setError("Social login failed or not configured.");
   };
 

@@ -17,8 +17,8 @@ export default function AdminLayout({ children }) {
       return;
     }
 
-    if (role !== "ADMIN") {
-      window.location.href = "/user/dashboard";
+    if (String(role || "").toUpperCase() !== "ADMIN") {
+      window.location.href = "/dashboard";
       return;
     }
 

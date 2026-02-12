@@ -17,7 +17,7 @@ export default function UserLayout({ children }) {
       return;
     }
 
-    if (role === "admin") {
+    if (String(role || "").toUpperCase() === "ADMIN") {
       window.location.href = "/admin";
       return;
     }
@@ -44,16 +44,16 @@ export default function UserLayout({ children }) {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">Food Tracker</h1>
           <div className="flex gap-4 items-center">
-            <Link href="/user/dashboard" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
+            <Link href="/dashboard" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
               Dashboard
             </Link>
-            <Link href="/user/meals" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
+            <Link href="/meals" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
               Meals
             </Link>
-            <Link href="/user/foods" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
+            <Link href="/foods" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
               Foods
             </Link>
-            <Link href="/user/profile" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
+            <Link href="/profile" className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
               Profile
             </Link>
             <span className="text-sm text-gray-600 px-3">{user?.name || "User"}</span>
