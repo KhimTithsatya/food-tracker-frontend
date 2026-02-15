@@ -8,11 +8,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api("/users/dashboard")
-      .then(setData)
-      .catch(() => alert("Unauthorized"))
-      .finally(() => setLoading(false));
-  }, []);
+  api("/user/dashboard")
+    .then(setData)
+    .catch(() => (window.location.href = "/login"))
+    .finally(() => setLoading(false));
+}, []);
+
 
   if (loading) {
     return (

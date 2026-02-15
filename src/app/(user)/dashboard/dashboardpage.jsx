@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import { api } from "../../../services/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001/api";
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api("/users/dashboard")
+    api("/user/dashboard")
       .then(setData)
-      .catch(() => alert("Unauthorized"))
+      .catch(() => (window.location.href = "/login"))
       .finally(() => setLoading(false));
   }, []);
 

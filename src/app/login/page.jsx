@@ -18,19 +18,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Use NextAuth credentials (still hits your backend)
-      const res = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      });
-
-      if (res?.error) {
-        setError("Invalid email or password");
-        return;
-      }
-
-      // Also store backend token/user for your existing API calls (optional)
+      // Call backend directly to get token and user data
       const apiRes = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,28 +26,40 @@ export default function LoginPage() {
       });
 
       const data = await apiRes.json();
-      if (apiRes.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("role", data.user?.role || "USER");
-
-        const role = String(data.user?.role || "USER").toUpperCase();
-        console.log("User role:", data.user?.role, "Normalized:", role);
-        
-        if (role === "ADMIN") {
-          window.location.href = "/admin";
-        } else {
-          window.location.href = "/dashboard";
-        }
+      if (!apiRes.ok) {
+        setError(data.message || "Invalid email or password");
+        setLoading(false);
         return;
       }
 
-      // If backend login failed but next-auth succeeded (unlikely), still go user
-      window.location.href = "/dashboard";
+      // Store token and user data
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("role", data.user?.role || "USER");
+
+      // Use NextAuth to establish session
+      const signInRes = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (signInRes?.error) {
+        console.warn("NextAuth signIn returned error, but backend login succeeded");
+      }
+
+      // Determine redirect based on role
+      const role = String(data.user?.role || "USER").toUpperCase();
+      console.log("Login successful - User role:", data.user?.role, "Normalized:", role);
+      
+      if (role === "ADMIN") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/dashboard";
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
       setError("Server not responding");
-    } finally {
       setLoading(false);
     }
   };
