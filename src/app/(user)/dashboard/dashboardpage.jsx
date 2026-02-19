@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { api } from "../../../services/api";
+import { userDashboard } from "../../../services/user.api";
+
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001/api";
 
@@ -10,7 +12,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api("/user/dashboard")
+   userDashboard()
       .then(setData)
       .catch(() => (window.location.href = "/login"))
       .finally(() => setLoading(false));

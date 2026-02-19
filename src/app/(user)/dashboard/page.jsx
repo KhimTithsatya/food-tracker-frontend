@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "../../../services/api";
+import { userDashboard } from "../../../services/user.api";
+
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  api("/user/dashboard")
+  userDashboard()
     .then(setData)
     .catch(() => (window.location.href = "/login"))
     .finally(() => setLoading(false));
