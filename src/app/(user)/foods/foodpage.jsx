@@ -27,7 +27,7 @@ export default function FoodPage() {
 
   const fetchFoods = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/user/foods`, {
+      const res = await fetch(`${API_BASE}/api/users/foods`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -46,8 +46,8 @@ export default function FoodPage() {
     setSuccess("");
 
     const url = editId
-      ? `${API_BASE}/api/user/foods/${editId}`
-      : `${API_BASE}/api/user/foods`;
+      ? `${API_BASE}/api/users/foods/${editId}`
+      : `${API_BASE}/api/users/foods`;
 
     const method = editId ? "PUT" : "POST";
 
@@ -93,7 +93,7 @@ export default function FoodPage() {
     if (!confirm("Delete this food?")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/user/foods/${id}`, {
+      const res = await fetch(`${API_BASE}/api/users/foods/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
