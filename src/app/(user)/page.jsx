@@ -11,6 +11,10 @@ export default function UserPage() {
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
   const [token, setToken] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [savingMeal, setSavingMeal] = useState(false);
+  const [mealName, setMealName] = useState("");
+  const [mealCalories, setMealCalories] = useState("");
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -27,7 +31,7 @@ export default function UserPage() {
       setError("");
 
        try {
-        const res = await fetch(`${API_BASE}/api/user/meals`, {
+        const res = await fetch(`${API_BASE}/api/users/meals`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -62,6 +66,54 @@ export default function UserPage() {
     localStorage.removeItem("user");
     localStorage.removeItem("role");
     window.location.href = "/login";
+  };
+
+  const createMeal = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const calories = Number(mealCalories);
+    if (!mealName.trim()) {
+      setError("Meal name is required");
+      return;
+    }
+
+    if (!Number.isFinite(calories) || calories < 0) {
+      setError("Calories must be a valid number");
+      return;
+    }
+
+    try {
+      setSavingMeal(true);
+      const res = await fetch(`${API_BASE}/api/users/meals`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: mealName.trim(), calories }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to create meal");
+      }
+
+      const created = await res.json();
+      setMeals((prev) => [created, ...prev]);
+      setMealName("");
+      setMealCalories("");
+      setShowAddModal(false);
+    } catch (e) {
+      setError(e.message || "Failed to create meal");
+    } finally {
+      setSavingMeal(false);
+    }
   };
 
   return (
@@ -116,7 +168,7 @@ export default function UserPage() {
             title="Log a Meal"
             desc="Add a new meal to your tracker"
             icon="➕"
-            onClick={() => (window.location.href = "/meals/new")}
+            onClick={() => setShowAddModal(true)}
             button="Add Meal"
           />
           <ActionCard
@@ -181,7 +233,7 @@ export default function UserPage() {
                   Start tracking by adding your first meal
                 </p>
                 <button
-                  onClick={() => (window.location.href = "/meals/new")}
+                  onClick={() => setShowAddModal(true)}
                   className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-4 py-2 text-sm font-semibold transition"
                 >
                   + Add First Meal
@@ -241,6 +293,63 @@ export default function UserPage() {
         <div className="text-xs text-white/40 text-center py-4 border-t border-white/5">
           <p>Food Tracker • {new Date().getFullYear()}</p>
         </div>
+
+        {showAddModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowAddModal(false)}
+            />
+            <div className="relative w-full max-w-md rounded-2xl border border-white/15 bg-slate-900 p-6 shadow-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Add Meal</h2>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="rounded-md border border-white/20 bg-white/5 px-2 py-1 text-sm text-white/80 hover:bg-white/10"
+                >
+                  Close
+                </button>
+              </div>
+
+              <form onSubmit={createMeal} className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm text-white/70">Meal Name</label>
+                  <input
+                    type="text"
+                    value={mealName}
+                    onChange={(e) => setMealName(e.target.value)}
+                    placeholder="e.g. Chicken rice"
+                    className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm text-white/70">Calories</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={mealCalories}
+                    onChange={(e) => setMealCalories(e.target.value)}
+                    placeholder="e.g. 650"
+                    className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={savingMeal}
+                  className="w-full rounded-lg bg-indigo-500 py-2.5 font-semibold text-white transition hover:bg-indigo-400 disabled:opacity-60"
+                >
+                  {savingMeal ? "Saving..." : "Create Meal"}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
@@ -296,4 +405,3 @@ function formatDate(d) {
     return String(d);
   }
 }
-

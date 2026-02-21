@@ -100,7 +100,7 @@ export default function UserLayout({ children }) {
       <div className="border-b border-white/10 bg-slate-900/40 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <nav className="flex gap-2 flex-wrap">
-            {navLink("/", "Dashboard", "📊")}
+            {navLink("/dashboard", "Dashboard", "📊")}
             {navLink("/meals", "Meals", "🍽️")}
             {navLink("/foods", "Foods", "🥗")}
             {navLink("/profile", "Profile", "👤")}
