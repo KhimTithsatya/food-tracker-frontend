@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
+const API_BASE =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_BASE ||
+  "http://localhost:5001";
 
 export default function FoodPage() {
   const [foods, setFoods] = useState([]);
