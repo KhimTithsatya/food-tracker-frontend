@@ -45,7 +45,7 @@ export default function ProfilePage() {
     setSuccess("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/user/profile`, {
+      const res = await fetch(`${API_BASE}/api/users/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

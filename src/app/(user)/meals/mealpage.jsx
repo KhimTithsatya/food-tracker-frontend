@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
 
 export default function MealPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [meals, setMeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [savingMeal, setSavingMeal] = useState(false);
+  const [mealName, setMealName] = useState("");
+  const [mealCalories, setMealCalories] = useState("");
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -22,9 +28,16 @@ export default function MealPage() {
     fetchMeals();
   }, [token]);
 
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setShowAddModal(true);
+      router.replace("/meals");
+    }
+  }, [searchParams, router]);
+
   const fetchMeals = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/user/meals`, {
+      const res = await fetch(`${API_BASE}/api/users/meals`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -41,7 +54,7 @@ export default function MealPage() {
     if (!confirm("Delete this meal?")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/user/meals/${id}`, {
+      const res = await fetch(`${API_BASE}/api/users/meals/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -50,6 +63,52 @@ export default function MealPage() {
       setMeals(meals.filter((m) => m.id !== id));
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const createMeal = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const calories = Number(mealCalories);
+    if (!mealName.trim()) {
+      setError("Meal name is required");
+      return;
+    }
+
+    if (!Number.isFinite(calories) || calories < 0) {
+      setError("Calories must be a valid number");
+      return;
+    }
+
+    try {
+      setSavingMeal(true);
+      const res = await fetch(`${API_BASE}/api/users/meals`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: mealName.trim(),
+          calories,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to create meal");
+      }
+
+      const created = await res.json();
+      setMeals((prev) => [created, ...prev]);
+      setMealName("");
+      setMealCalories("");
+      setShowAddModal(false);
+    } catch (err) {
+      setError(err.message || "Failed to create meal");
+    } finally {
+      setSavingMeal(false);
     }
   };
 
@@ -73,12 +132,13 @@ export default function MealPage() {
           <h1 className="text-4xl font-bold text-white">🍽️ Meals</h1>
           <p className="text-white/60 mt-2">Track your daily meals and calories</p>
         </div>
-        <Link
-          href="/meals/new"
+        <button
+          type="button"
+          onClick={() => setShowAddModal(true)}
           className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-6 py-3 text-sm font-semibold transition duration-200"
         >
           + Add Meal
-        </Link>
+        </button>
       </div>
 
       {error && (
@@ -112,12 +172,13 @@ export default function MealPage() {
             <div className="text-4xl mb-3">🍽️</div>
             <p className="text-white/70 font-medium mb-2">No meals logged yet</p>
             <p className="text-white/50 text-sm mb-4">Start tracking by adding your first meal</p>
-            <Link
-              href="/meals/new"
+            <button
+              type="button"
+              onClick={() => setShowAddModal(true)}
               className="rounded-lg bg-indigo-500 hover:bg-indigo-400 px-4 py-2 text-sm font-semibold transition"
             >
               + Add First Meal
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -158,6 +219,63 @@ export default function MealPage() {
           </div>
         )}
       </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowAddModal(false)}
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-white/15 bg-slate-900 p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Add Meal</h2>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="rounded-md border border-white/20 bg-white/5 px-2 py-1 text-sm text-white/80 hover:bg-white/10"
+              >
+                Close
+              </button>
+            </div>
+
+            <form onSubmit={createMeal} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm text-white/70">Meal Name</label>
+                <input
+                  type="text"
+                  value={mealName}
+                  onChange={(e) => setMealName(e.target.value)}
+                  placeholder="e.g. Chicken rice"
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-white/70">Calories</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={mealCalories}
+                  onChange={(e) => setMealCalories(e.target.value)}
+                  placeholder="e.g. 650"
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingMeal}
+                className="w-full rounded-lg bg-indigo-500 py-2.5 font-semibold text-white transition hover:bg-indigo-400 disabled:opacity-60"
+              >
+                {savingMeal ? "Saving..." : "Create Meal"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
