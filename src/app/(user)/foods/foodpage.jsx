@@ -28,15 +28,34 @@ export default function FoodPage() {
     fetchFoods();
   }, [token]);
 
+  const parseResponse = async (res) => {
+    const text = await res.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
+    }
+
+    if (!res.ok) {
+      const message =
+        (data && typeof data === "object" && data.message) ||
+        `Request failed (${res.status})`;
+      throw new Error(message);
+    }
+
+    return data;
+  };
+
   const fetchFoods = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/users/foods`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await parseResponse(res);
       setFoods(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError("Failed to load foods");
+      setError(err.message || "Failed to load foods");
       console.error(err);
     } finally {
       setLoading(false);
@@ -63,10 +82,7 @@ export default function FoodPage() {
         },
         body: JSON.stringify({ name, calories: Number(calories) }),
       });
-
-      if (!res.ok) throw new Error("Failed to save food");
-
-      const data = await res.json();
+      const data = await parseResponse(res);
 
       if (editId) {
         setFoods(foods.map((f) => (f.id === editId ? data : f)));
@@ -101,7 +117,7 @@ export default function FoodPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to delete");
+      await parseResponse(res);
       setFoods(foods.filter((f) => f.id !== id));
       setSuccess("Food deleted successfully!");
     } catch (err) {
