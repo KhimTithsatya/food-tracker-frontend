@@ -29,3 +29,12 @@ async function request(path, options = {}) {
 export function userDashboard() {
   return request("/dashboard"); // GET /api/users/dashboard
 }
+
+export function userMeals(params = {}) {
+  const query = new URLSearchParams();
+  if (params.from) query.set("from", params.from);
+  if (params.to) query.set("to", params.to);
+  if (params.mealType) query.set("mealType", params.mealType);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return request(`/meals${suffix}`); // GET /api/users/meals
+}
