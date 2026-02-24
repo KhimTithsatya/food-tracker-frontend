@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5001/api/users", {
+      const res = await fetch(`${API_BASE}/api/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

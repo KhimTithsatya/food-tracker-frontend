@@ -23,13 +23,13 @@ export default function AdminReportsPage() {
   const fetchStats = async () => {
     try {
       const [usersRes, foodsRes, mealsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/users`, {
+        fetch(`${API_BASE}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE}/api/foods`, {
+        fetch(`${API_BASE}/api/admin/foods`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE}/api/meals`, {
+        fetch(`${API_BASE}/api/admin/meals`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);

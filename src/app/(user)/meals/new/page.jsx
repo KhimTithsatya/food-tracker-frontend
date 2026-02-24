@@ -9,7 +9,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
 export default function NewMealPage() {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [calories, setCalories] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -23,13 +22,8 @@ export default function NewMealPage() {
       return;
     }
 
-    const caloriesNumber = Number(calories);
     if (!name.trim()) {
       setError("Meal name is required.");
-      return;
-    }
-    if (!Number.isFinite(caloriesNumber) || caloriesNumber < 0) {
-      setError("Calories must be a valid number.");
       return;
     }
 
@@ -41,10 +35,7 @@ export default function NewMealPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name: name.trim(),
-          calories: caloriesNumber,
-        }),
+        body: JSON.stringify({ name: name.trim() }),
       });
 
       if (!res.ok) {
@@ -64,7 +55,7 @@ export default function NewMealPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Add New Meal</h1>
-          <p className="text-white/60 mt-1">Create a meal and track calories.</p>
+          <p className="text-white/60 mt-1">Create a meal and add foods to track calories.</p>
         </div>
         <Link
           href="/meals"
@@ -96,21 +87,9 @@ export default function NewMealPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">
-              Calories
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={calories}
-              onChange={(e) => setCalories(e.target.value)}
-              placeholder="e.g. 550"
-              className="w-full rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
-            />
-          </div>
+          <p className="text-xs text-white/50">
+            Calories are calculated from foods in the meal.
+          </p>
 
           <button
             type="submit"

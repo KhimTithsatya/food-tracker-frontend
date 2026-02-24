@@ -23,7 +23,7 @@ export default function MealPage() {
 
   const fetchMeals = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/meals`, {
+      const res = await fetch(`${API_BASE}/api/admin/meals`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -40,7 +40,7 @@ export default function MealPage() {
     if (!confirm("Delete this meal?")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/meals/${id}`, {
+      const res = await fetch(`${API_BASE}/api/admin/meals/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

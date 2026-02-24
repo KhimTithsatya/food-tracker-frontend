@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
@@ -14,7 +14,8 @@ export default function UserPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [savingMeal, setSavingMeal] = useState(false);
   const [mealName, setMealName] = useState("");
-  const [mealCalories, setMealCalories] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("date_desc");
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -57,9 +58,43 @@ export default function UserPage() {
     load();
   }, [token]);
 
-  const totalCalories = useMemo(() => {
-    return meals.reduce((sum, m) => sum + (Number(m.calories) || 0), 0);
-  }, [meals]);
+  const getMealCalories = (meal) => {
+    if (Number.isFinite(Number(meal?.calories))) return Number(meal.calories);
+    if (Number.isFinite(Number(meal?.totalCalories))) return Number(meal.totalCalories);
+    if (Array.isArray(meal?.items)) {
+      return meal.items.reduce(
+        (sum, item) => sum + (item?.food?.calories || 0) * (item?.quantity || 0),
+        0
+      );
+    }
+    return 0;
+  };
+
+  const totalCalories = meals.reduce((sum, m) => sum + getMealCalories(m), 0);
+
+  const filteredAndSortedMeals = meals
+    .filter((meal) => {
+      const mealNameText = String(meal?.name || meal?.title || "").toLowerCase();
+      return mealNameText.includes(searchTerm.trim().toLowerCase());
+    })
+    .sort((a, b) => {
+      if (sortBy === "date_asc") {
+        return new Date(a.createdAt || a.date || 0) - new Date(b.createdAt || b.date || 0);
+      }
+      if (sortBy === "calories_desc") {
+        return getMealCalories(b) - getMealCalories(a);
+      }
+      if (sortBy === "calories_asc") {
+        return getMealCalories(a) - getMealCalories(b);
+      }
+      if (sortBy === "name_asc") {
+        return String(a.name || a.title || "").localeCompare(String(b.name || b.title || ""));
+      }
+      if (sortBy === "name_desc") {
+        return String(b.name || b.title || "").localeCompare(String(a.name || a.title || ""));
+      }
+      return new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0);
+    });
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -77,14 +112,8 @@ export default function UserPage() {
       return;
     }
 
-    const calories = Number(mealCalories);
     if (!mealName.trim()) {
       setError("Meal name is required");
-      return;
-    }
-
-    if (!Number.isFinite(calories) || calories < 0) {
-      setError("Calories must be a valid number");
       return;
     }
 
@@ -96,7 +125,7 @@ export default function UserPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: mealName.trim(), calories }),
+        body: JSON.stringify({ name: mealName.trim() }),
       });
 
       if (!res.ok) {
@@ -107,7 +136,6 @@ export default function UserPage() {
       const created = await res.json();
       setMeals((prev) => [created, ...prev]);
       setMealName("");
-      setMealCalories("");
       setShowAddModal(false);
     } catch (e) {
       setError(e.message || "Failed to create meal");
@@ -122,7 +150,7 @@ export default function UserPage() {
       <header className="border-b border-white/10 bg-slate-950/60 backdrop-blur sticky top-0 z-50">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-white bg-clip-text text-transparent">
               Dashboard
             </h1>
             <p className="text-sm text-white/60 mt-1">
@@ -206,6 +234,28 @@ export default function UserPage() {
             )}
           </div>
 
+          <div className="mb-4 grid gap-3 md:grid-cols-2">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search meals by name..."
+              className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="date_desc">Newest first</option>
+              <option value="date_asc">Oldest first</option>
+              <option value="calories_desc">Calories: high to low</option>
+              <option value="calories_asc">Calories: low to high</option>
+              <option value="name_asc">Name: A to Z</option>
+              <option value="name_desc">Name: Z to A</option>
+            </select>
+          </div>
+
           <div className="space-y-4">
             {loading && (
               <div className="flex items-center justify-center py-8">
@@ -241,7 +291,13 @@ export default function UserPage() {
               </div>
             )}
 
-            {!loading && !error && meals.length > 0 && (
+            {!loading && !error && meals.length > 0 && filteredAndSortedMeals.length === 0 && (
+              <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-6 text-sm text-white/70 text-center">
+                No meals found for your search.
+              </div>
+            )}
+
+            {!loading && !error && filteredAndSortedMeals.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -261,7 +317,7 @@ export default function UserPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {meals.slice(0, 5).map((m) => (
+                    {filteredAndSortedMeals.map((m) => (
                       <tr
                         key={m.id ?? `${m.name}-${m.createdAt}`}
                         className="hover:bg-white/5 transition"
@@ -270,7 +326,7 @@ export default function UserPage() {
                           {m.name || m.title || "Untitled Meal"}
                         </td>
                         <td className="px-4 py-3 text-indigo-400 font-semibold">
-                          {m.calories ?? m.totalCalories ?? "-"} kcal
+                          {getMealCalories(m)} kcal
                         </td>
                         <td className="px-4 py-3 text-white/60 text-sm">
                           {formatDate(m.createdAt || m.date)}
@@ -325,19 +381,9 @@ export default function UserPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm text-white/70">Calories</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={mealCalories}
-                    onChange={(e) => setMealCalories(e.target.value)}
-                    placeholder="e.g. 650"
-                    className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  />
-                </div>
+                <p className="text-xs text-white/50">
+                  Calories are calculated from foods in each meal.
+                </p>
 
                 <button
                   type="submit"

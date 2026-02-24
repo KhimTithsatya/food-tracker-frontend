@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     users: 0,
@@ -25,20 +27,41 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const [usersRes, foodsRes, mealsRes] = await Promise.all([
-        fetch("http://localhost:5001/api/users", {
+        fetch(`${API_BASE}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5001/api/foods", {
+        fetch(`${API_BASE}/api/admin/foods`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5001/api/meals", {
+        fetch(`${API_BASE}/api/admin/meals`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
 
-      const users = await usersRes.json();
-      const foods = await foodsRes.json();
-      const meals = await mealsRes.json();
+      const parseJson = async (res, label) => {
+        const text = await res.text();
+        let data = null;
+
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch {
+          throw new Error(`${label} returned non-JSON (status ${res.status}).`);
+        }
+
+        if (!res.ok) {
+          throw new Error(
+            `${label} request failed: ${
+              data?.message || `status ${res.status}`
+            }`
+          );
+        }
+
+        return data;
+      };
+
+      const users = await parseJson(usersRes, "Users");
+      const foods = await parseJson(foodsRes, "Foods");
+      const meals = await parseJson(mealsRes, "Meals");
 
       setStats({
         users: Array.isArray(users) ? users.length : 0,
