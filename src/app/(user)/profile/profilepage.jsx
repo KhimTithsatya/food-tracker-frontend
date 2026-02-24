@@ -12,8 +12,7 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
     if (!token) {
@@ -25,15 +24,21 @@ export default function ProfilePage() {
   }, [token]);
 
   const fetchProfile = async () => {
+    setLoading(true);
+    setError("");
+
     try {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const parsed = JSON.parse(userData);
-        setUser(parsed);
-        setFormData(parsed);
-      }
+      const res = await fetch(`${API_BASE}/api/users/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error("Failed to load profile");
+      const data = await res.json();
+      setUser(data);
+      setFormData(data);
+      localStorage.setItem("user", JSON.stringify(data));
     } catch (err) {
-      setError("Failed to load profile");
+      setError(err.message || "Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -49,21 +54,50 @@ export default function ProfilePage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          profileImage: formData.profileImage || null
+        })
       });
 
-      if (!res.ok) throw new Error("Failed to update profile");
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : null;
 
-      const updated = await res.json();
-      setUser(updated);
-      localStorage.setItem("user", JSON.stringify(updated));
+      if (!res.ok) {
+        throw new Error((data && data.message) || "Failed to update profile");
+      }
+
+      setUser(data);
+      setFormData(data);
+      localStorage.setItem("user", JSON.stringify(data));
       setSuccess("Profile updated successfully!");
       setEditing(false);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to update profile");
     }
+  };
+
+  const onProfileImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file");
+      return;
+    }
+
+    const maxBytes = 3 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setError("Image is too large. Max size is 3MB.");
+      return;
+    }
+
+    const dataUrl = await toDataUrl(file);
+    setFormData((prev) => ({ ...prev, profileImage: dataUrl }));
+    setError("");
   };
 
   if (loading) {
@@ -99,39 +133,52 @@ export default function ProfilePage() {
       <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8">
         {editing ? (
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex items-center gap-4">
+              <img
+                src={formData.profileImage || avatarFallback(formData.name)}
+                alt="Profile"
+                className="h-16 w-16 rounded-full object-cover border border-white/20"
+              />
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-white/70 mb-2">Profile Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onProfileImageSelect}
+                  className="w-full text-sm text-white/70 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-500 file:px-4 file:py-2 file:text-white hover:file:bg-indigo-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, profileImage: null }))}
+                  className="mt-2 text-xs text-white/60 hover:text-white"
+                >
+                  Remove image
+                </button>
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
-                Full Name
-              </label>
+              <label className="block text-sm font-medium text-white/70 mb-2">Full Name</label>
               <input
-                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 type="text"
                 value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-white/70 mb-2">Email Address</label>
               <input
-                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 type="email"
                 value={formData.email || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button
-                type="submit"
-                className="flex-1 bg-indigo-500 hover:bg-indigo-400 text-white py-2 rounded-lg font-medium transition duration-200"
-              >
+              <button type="submit" className="flex-1 bg-indigo-500 hover:bg-indigo-400 text-white py-2 rounded-lg font-medium">
                 Save Changes
               </button>
               <button
@@ -141,7 +188,7 @@ export default function ProfilePage() {
                   setFormData(user);
                   setError("");
                 }}
-                className="flex-1 bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg font-medium border border-white/20 transition duration-200"
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg font-medium border border-white/20"
               >
                 Cancel
               </button>
@@ -149,6 +196,18 @@ export default function ProfilePage() {
           </form>
         ) : (
           <div className="space-y-6">
+            <div className="flex items-center gap-4 pb-6 border-b border-white/10">
+              <img
+                src={user?.profileImage || avatarFallback(user?.name)}
+                alt="Profile"
+                className="h-16 w-16 rounded-full object-cover border border-white/20"
+              />
+              <div>
+                <p className="text-sm text-white/60 font-medium uppercase tracking-wide">Profile Photo</p>
+                <p className="text-white/70 text-sm mt-1">Uploaded image visible in your account</p>
+              </div>
+            </div>
+
             <div className="pb-6 border-b border-white/10">
               <p className="text-sm text-white/60 font-medium uppercase tracking-wide">Full Name</p>
               <p className="text-2xl font-semibold text-white mt-2">{user?.name || "Not Set"}</p>
@@ -163,16 +222,13 @@ export default function ProfilePage() {
               <p className="text-sm text-white/60 font-medium uppercase tracking-wide">Account Role</p>
               <div className="flex items-center gap-2 mt-2">
                 <span className="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 text-sm font-semibold capitalize">
-                  {user?.role?.toLowerCase() || "User"}
+                  {user?.role?.toLowerCase() || "user"}
                 </span>
               </div>
             </div>
 
             <div className="pt-4">
-              <button
-                onClick={() => setEditing(true)}
-                className="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-2 rounded-lg font-medium transition duration-200"
-              >
+              <button onClick={() => setEditing(true)} className="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-2 rounded-lg font-medium">
                 ✏️ Edit Profile
               </button>
             </div>
@@ -180,7 +236,6 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Account Info Card */}
       <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Account Information</h3>
         <div className="space-y-3 text-sm">
@@ -188,13 +243,37 @@ export default function ProfilePage() {
             <span className="text-white/60">Account Status:</span> <span className="text-green-400 font-medium">Active</span>
           </p>
           <p className="text-white/70">
-            <span className="text-white/60">Member Since:</span> <span className="text-white">{new Date().toLocaleDateString()}</span>
+            <span className="text-white/60">Member Since:</span>{" "}
+            <span className="text-white">{formatDate(user?.createdAt)}</span>
           </p>
           <p className="text-white/70">
-            <span className="text-white/60">Last Updated:</span> <span className="text-white">Just now</span>
+            <span className="text-white/60">Last Updated:</span>{" "}
+            <span className="text-white">{formatDate(user?.updatedAt)}</span>
           </p>
         </div>
       </div>
     </div>
   );
+}
+
+function toDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Failed to read image"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function avatarFallback(name) {
+  const label = (name || "U").slice(0, 1).toUpperCase();
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><rect width='100%' height='100%' fill='#1e293b'/><text x='50%' y='56%' dominant-baseline='middle' text-anchor='middle' fill='#e2e8f0' font-size='56' font-family='Arial'>${label}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString();
 }
