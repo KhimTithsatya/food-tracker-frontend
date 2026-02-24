@@ -31,8 +31,9 @@ export default function UserLayout({ children }) {
       setUser(null);
     }
 
-    const savedTheme = localStorage.getItem("theme");
-    setTheme(savedTheme === "light" ? "light" : "dark");
+    const savedTheme = localStorage.getItem("theme") === "light" ? "light" : "dark";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
 
     setReady(true);
   }, []);

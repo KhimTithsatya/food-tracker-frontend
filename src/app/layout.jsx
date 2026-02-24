@@ -8,8 +8,22 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var saved = localStorage.getItem("theme");
+                  document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+                } catch (e) {
+                  document.documentElement.setAttribute("data-theme", "dark");
+                }
+              })();
+            `,
+          }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>
