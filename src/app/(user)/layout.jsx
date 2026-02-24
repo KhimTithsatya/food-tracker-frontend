@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 export default function UserLayout({ children }) {
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState(null);
+  const [theme, setTheme] = useState("dark");
   const pathname = usePathname();
 
   useEffect(() => {
@@ -30,12 +31,21 @@ export default function UserLayout({ children }) {
       setUser(null);
     }
 
+    const savedTheme = localStorage.getItem("theme");
+    setTheme(savedTheme === "light" ? "light" : "dark");
+
     setReady(true);
   }, []);
 
+  useEffect(() => {
+    if (!ready) return;
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme, ready]);
+
   if (!ready) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-950 via-blue-900 to-indigo-900">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 text-white">
             <div className="animate-spin">⏳</div>
@@ -75,9 +85,9 @@ export default function UserLayout({ children }) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-blue-900 to-indigo-900 text-white">
       {/* Header/Navbar */}
-      <header className="border-b border-white/10 bg-slate-950/60 backdrop-blur sticky top-0 z-50">
+      <header className="border-b border-white/10 bg-indigo-950/60 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-2xl">🍽️</div>
@@ -96,6 +106,13 @@ export default function UserLayout({ children }) {
             </span>
 
             <button
+              onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+              className="rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 px-4 py-2 text-sm font-medium transition duration-200"
+            >
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
+
+            <button
               onClick={handleLogout}
               className="rounded-lg border border-white/20 bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 px-4 py-2 text-sm font-medium transition duration-200"
             >
@@ -106,7 +123,7 @@ export default function UserLayout({ children }) {
       </header>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-white/10 bg-slate-900/40 backdrop-blur">
+      <div className="border-b border-white/10 bg-indigo-900/40 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <nav className="flex gap-2 flex-wrap">
             {navLink("/dashboard", "Dashboard", "📊")}
@@ -123,7 +140,7 @@ export default function UserLayout({ children }) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-slate-950/60 mt-12">
+      <footer className="border-t border-white/10 bg-indigo-950/60 mt-12">
         <div className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-white/40">
           <p>Food Tracker App • © {new Date().getFullYear()}</p>
         </div>

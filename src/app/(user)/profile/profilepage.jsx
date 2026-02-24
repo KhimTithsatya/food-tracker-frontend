@@ -221,7 +221,7 @@ export default function ProfilePage() {
             <div className="pb-6 border-b border-white/10">
               <p className="text-sm text-white/60 font-medium uppercase tracking-wide">Account Role</p>
               <div className="flex items-center gap-2 mt-2">
-                <span className="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 text-sm font-semibold capitalize">
+                <span className="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-blue-300 text-sm font-semibold capitalize">
                   {user?.role?.toLowerCase() || "user"}
                 </span>
               </div>

@@ -145,9 +145,9 @@ export default function UserPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-blue-900 to-indigo-900 text-white">
       {/* Header */}
-      <header className="border-b border-white/10 bg-slate-950/60 backdrop-blur sticky top-0 z-50">
+      <header className="border-b border-white/10 bg-indigo-950/60 backdrop-blur sticky top-0 z-50">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-white bg-clip-text text-transparent">
@@ -245,7 +245,7 @@ export default function UserPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-white/20 bg-indigo-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="date_desc">Newest first</option>
               <option value="date_asc">Oldest first</option>
@@ -356,7 +356,7 @@ export default function UserPage() {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowAddModal(false)}
             />
-            <div className="relative w-full max-w-md rounded-2xl border border-white/15 bg-slate-900 p-6 shadow-2xl">
+            <div className="relative w-full max-w-md rounded-2xl border border-white/15 bg-indigo-900 p-6 shadow-2xl">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Add Meal</h2>
                 <button

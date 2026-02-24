@@ -37,7 +37,7 @@ body {
   }
 
   .btn-primary {
-    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+    @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;
   }
 
   .btn-secondary {
@@ -50,7 +50,7 @@ body {
 
   /* Inputs */
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500;
   }
 
   /* Tables */
@@ -207,3 +207,68 @@ body {
   background: #94a3b8;
 }
 
+/* Light mode overrides for user pages */
+html[data-theme="light"] body {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+html[data-theme="light"] .bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, #f8fafc, #eef2ff, #f1f5f9) !important;
+}
+
+html[data-theme="light"] .bg-indigo-950\/60,
+html[data-theme="light"] .bg-indigo-900\/40,
+html[data-theme="light"] .bg-indigo-900,
+html[data-theme="light"] .bg-indigo-950,
+html[data-theme="light"] .bg-slate-950\/60,
+html[data-theme="light"] .bg-slate-900\/40,
+html[data-theme="light"] .bg-slate-900,
+html[data-theme="light"] .bg-slate-950 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html[data-theme="light"] .border-white\/10,
+html[data-theme="light"] .border-white\/15,
+html[data-theme="light"] .border-white\/20 {
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .text-white\/80 {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .text-white\/70,
+html[data-theme="light"] .text-white\/60 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .text-white\/50,
+html[data-theme="light"] .text-white\/40 {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .placeholder-white\/40::placeholder {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] .bg-indigo-500,
+html[data-theme="light"] .hover\:bg-indigo-400:hover,
+html[data-theme="light"] .bg-red-600,
+html[data-theme="light"] .hover\:bg-red-700:hover,
+html[data-theme="light"] .file\:bg-indigo-500::file-selector-button,
+html[data-theme="light"] .hover\:file\:bg-indigo-400:hover::file-selector-button {
+  color: #ffffff !important;
+}
