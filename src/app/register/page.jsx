@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { getProviders, signIn } from "next-auth/react";
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
@@ -13,6 +13,17 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [loading, setLoading] = useState(false);
+  const [socialProviders, setSocialProviders] = useState([]);
+
+  useEffect(() => {
+    const loadProviders = async () => {
+      const providers = await getProviders();
+      const names = ["google", "github", "facebook"];
+      const available = names.filter((name) => providers?.[name]);
+      setSocialProviders(available);
+    };
+    loadProviders();
+  }, []);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -52,7 +63,7 @@ export default function RegisterPage() {
 
   const handleSocial = async (provider) => {
     setError("");
-    const result = await signIn(provider, { callbackUrl: "/dashboard" });
+    const result = await signIn(provider, { callbackUrl: "/auth/social-success" });
     if (result?.error) setError("Social login failed or not configured.");
   };
 
@@ -64,22 +75,41 @@ export default function RegisterPage() {
           <p className="text-sm text-white/70 mt-1">Register to start tracking meals.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => handleSocial("google")}
-            className="rounded-xl bg-white/10 hover:bg-white/15 text-white px-4 py-3 border border-white/10 transition"
-          >
-            Google
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSocial("github")}
-            className="rounded-xl bg-white/10 hover:bg-white/15 text-white px-4 py-3 border border-white/10 transition"
-          >
-            GitHub
-          </button>
-        </div>
+        {socialProviders.length > 0 ? (
+          <div className="grid grid-cols-3 gap-3">
+            {socialProviders.includes("google") && (
+              <button
+                type="button"
+                onClick={() => handleSocial("google")}
+                className="rounded-xl bg-white/10 hover:bg-white/15 text-white px-4 py-3 border border-white/10 transition"
+              >
+                Google
+              </button>
+            )}
+            {socialProviders.includes("github") && (
+              <button
+                type="button"
+                onClick={() => handleSocial("github")}
+                className="rounded-xl bg-white/10 hover:bg-white/15 text-white px-4 py-3 border border-white/10 transition"
+              >
+                GitHub
+              </button>
+            )}
+            {socialProviders.includes("facebook") && (
+              <button
+                type="button"
+                onClick={() => handleSocial("facebook")}
+                className="rounded-xl bg-white/10 hover:bg-white/15 text-white px-4 py-3 border border-white/10 transition"
+              >
+                Facebook
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
+            Social login is not configured yet.
+          </div>
+        )}
 
         <div className="flex items-center gap-3 my-6">
           <div className="h-px bg-white/10 flex-1" />
