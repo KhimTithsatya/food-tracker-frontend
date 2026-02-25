@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const navItems = [
@@ -66,7 +67,16 @@ export default function AdminLayout({ children }) {
       <aside className="hidden md:flex md:fixed md:inset-y-0 md:w-72 md:flex-col border-r border-white/10 bg-slate-900/70 backdrop-blur-xl">
         <div className="p-6 border-b border-white/10">
           <p className="text-xs uppercase tracking-[0.2em] text-cyan-300/80">Control Center</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Food Tracker</h2>
+          <div className="mt-3 flex items-center gap-3">
+            <Image
+              src="/logo-main.png"
+              alt="My Healthy Bowl logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-lg object-contain"
+            />
+            <h2 className="text-2xl font-semibold text-white">My Healthy Bowl</h2>
+          </div>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">

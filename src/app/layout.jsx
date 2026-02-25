@@ -2,8 +2,13 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata = {
-  title: "Food Tracker App",
+  title: "My Healthy Bowl",
   description: "Track your meals and calories",
+  icons: {
+    icon: "/logo-main.png",
+    shortcut: "/logo-main.png",
+    apple: "/logo-main.png"
+  }
 };
 
 export default function RootLayout({ children }) {

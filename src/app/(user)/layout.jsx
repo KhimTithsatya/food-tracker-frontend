@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function UserLayout({ children }) {
@@ -91,13 +92,19 @@ export default function UserLayout({ children }) {
       <header className="border-b border-white/10 bg-indigo-950/60 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="text-2xl">🍽️</div>
+            <Image
+              src="/logo-main.png"
+              alt="My Healthy Bowl logo"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-lg object-contain"
+            />
             <Link
               href={pathname || "/"}
               onClick={handleTitleClick}
               className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent"
             >
-              Food Tracker
+              My Healthy Bowl
             </Link>
           </div>
 
@@ -143,7 +150,7 @@ export default function UserLayout({ children }) {
       {/* Footer */}
       <footer className="border-t border-white/10 bg-indigo-950/60 mt-12">
         <div className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-white/40">
-          <p>Food Tracker App • © {new Date().getFullYear()}</p>
+          <p>My Healthy Bowl • © {new Date().getFullYear()}</p>
         </div>
       </footer>
     </div>
