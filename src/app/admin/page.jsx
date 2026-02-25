@@ -11,6 +11,7 @@ export default function AdminDashboard() {
     meals: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
+      setError("");
       const [usersRes, foodsRes, mealsRes] = await Promise.all([
         fetch(`${API_BASE}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -70,6 +72,7 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error("Failed to fetch stats:", error);
+      setError(error.message || "Failed to load dashboard");
     } finally {
       setLoading(false);
     }
@@ -77,27 +80,44 @@ export default function AdminDashboard() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-10 text-slate-300">
         Loading dashboard...
       </div>
     );
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-600">
-          <h3 className="text-gray-600 text-sm font-semibold mb-2">Users</h3>
-          <p className="text-4xl font-bold text-blue-600">{stats.users}</p>
+    <div className="space-y-6">
+      <div>
+        <p className="text-xs uppercase tracking-[0.2em] text-cyan-300/80">Overview</p>
+        <h2 className="mt-2 text-3xl font-semibold text-white">Dashboard</h2>
+      </div>
+
+      {error ? (
+        <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {error}
         </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
-          <h3 className="text-gray-600 text-sm font-semibold mb-2">Foods</h3>
-          <p className="text-4xl font-bold text-green-600">{stats.foods}</p>
+      ) : null}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-cyan-300/20 bg-gradient-to-br from-cyan-400/15 to-cyan-400/5 p-6">
+          <p className="text-sm uppercase tracking-wider text-cyan-200/80">Users</p>
+          <p className="mt-3 text-4xl font-semibold text-white">{stats.users}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-600">
-          <h3 className="text-gray-600 text-sm font-semibold mb-2">Meals</h3>
-          <p className="text-4xl font-bold text-purple-600">{stats.meals}</p>
+        <div className="rounded-2xl border border-emerald-300/20 bg-gradient-to-br from-emerald-400/15 to-emerald-400/5 p-6">
+          <p className="text-sm uppercase tracking-wider text-emerald-200/80">Foods</p>
+          <p className="mt-3 text-4xl font-semibold text-white">{stats.foods}</p>
         </div>
+        <div className="rounded-2xl border border-indigo-300/20 bg-gradient-to-br from-indigo-400/15 to-indigo-400/5 p-6">
+          <p className="text-sm uppercase tracking-wider text-indigo-200/80">Meals</p>
+          <p className="mt-3 text-4xl font-semibold text-white">{stats.meals}</p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+        <p className="mt-1 text-sm text-slate-300">
+          Manage users, curate food data, and monitor activity from the admin menu.
+        </p>
       </div>
     </div>
   );

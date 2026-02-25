@@ -8,6 +8,10 @@ function isReal(value) {
   return value && !String(value).startsWith("YOUR_");
 }
 
+function backendBaseUrl() {
+  return process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+}
+
 const providers = [];
 
 // Social providers only if configured
@@ -34,6 +38,9 @@ if (isReal(process.env.FACEBOOK_CLIENT_ID) && isReal(process.env.FACEBOOK_CLIENT
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      authorization: {
+        params: { scope: "email,public_profile" },
+      },
     })
   );
 }
@@ -47,7 +54,7 @@ providers.push(
       password: { label: "Password", type: "password" },
     },
     async authorize(credentials) {
-      const res = await fetch(`${process.env.BACKEND_URL || "http://localhost:5001"}/api/auth/login`, {
+      const res = await fetch(`${backendBaseUrl()}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -22,6 +22,8 @@ export default function SocialSuccessPage() {
         setError("");
         const email = session?.user?.email;
         const name = session?.user?.name || "";
+        const provider =
+          new URLSearchParams(window.location.search).get("provider") || "google";
 
         if (!email) {
           throw new Error("Could not read email from social account");
@@ -30,7 +32,7 @@ export default function SocialSuccessPage() {
         const res = await fetch(`${API_BASE}/api/auth/social-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, name }),
+          body: JSON.stringify({ email, name, provider }),
         });
 
         const data = await res.json().catch(() => ({}));

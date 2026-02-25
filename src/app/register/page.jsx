@@ -63,7 +63,7 @@ export default function RegisterPage() {
 
   const handleSocial = async (provider) => {
     setError("");
-    const result = await signIn(provider, { callbackUrl: "/auth/social-success" });
+    const result = await signIn(provider, { callbackUrl: `/auth/social-success?provider=${provider}` });
     if (result?.error) setError("Social login failed or not configured.");
   };
 

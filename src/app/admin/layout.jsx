@@ -2,10 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const navItems = [
+  { href: "/admin", label: "Dashboard" },
+  { href: "/admin/profile", label: "Profile" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/foods", label: "Foods" },
+  { href: "/admin/meals", label: "Meals" },
+  { href: "/admin/reports", label: "Reports" },
+  { href: "/admin/settings", label: "Settings" },
+];
 
 export default function AdminLayout({ children }) {
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -31,7 +43,13 @@ export default function AdminLayout({ children }) {
     setReady(true);
   }, []);
 
-  if (!ready) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center">
+        Loading admin panel...
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     localStorage.clear();
@@ -39,66 +57,74 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
-      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-blue-600 mb-8">Food Tracker</h2>
-          <nav className="space-y-2">
-            <Link
-              href="/admin"
-              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded font-medium"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/admin/foods"
-              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded"
-            >
-              Foods
-            </Link>
-            <Link
-              href="/admin/meals"
-              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded"
-            >
-              Meals
-            </Link>
-            <Link
-              href="/admin/users"
-              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded"
-            >
-              Users
-            </Link>
-            <Link
-              href="/admin/reports"
-              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded"
-            >
-              Reports
-            </Link>
-            <Link
-              href="/admin/settings"
-              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded"
-            >
-              Settings
-            </Link>
-          </nav>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -left-24 h-96 w-96 rounded-full bg-cyan-400/15 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-[28rem] w-[28rem] rounded-full bg-indigo-500/20 blur-3xl" />
+      </div>
+
+      <aside className="hidden md:flex md:fixed md:inset-y-0 md:w-72 md:flex-col border-r border-white/10 bg-slate-900/70 backdrop-blur-xl">
+        <div className="p-6 border-b border-white/10">
+          <p className="text-xs uppercase tracking-[0.2em] text-cyan-300/80">Control Center</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Food Tracker</h2>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t bg-white">
-          <p className="text-sm text-gray-600 mb-4">Admin: {user?.name || "User"}</p>
+
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {navItems.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block rounded-xl px-4 py-3 text-sm font-medium transition ${
+                  active
+                    ? "bg-cyan-400/20 text-cyan-100 border border-cyan-300/30"
+                    : "text-slate-300 hover:bg-white/5 hover:text-white border border-transparent"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-white/10">
+          <p className="text-xs text-slate-400">Signed in as</p>
+          <p className="text-sm font-semibold text-white truncate">{user?.name || "Admin"}</p>
           <button
             onClick={handleLogout}
-            className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium"
+            className="mt-3 w-full rounded-xl bg-rose-500/90 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 transition"
           >
             Logout
           </button>
         </div>
       </aside>
-      <main className="flex-1">
-        <div className="bg-white border-b border-gray-200 p-6 shadow-sm">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
-        </div>
-        <div className="p-6">
-          {children}
-        </div>
+
+      <main className="md:pl-72">
+        <header className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
+          <div className="mx-auto max-w-7xl px-4 py-4 md:px-8">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Admin Panel</p>
+            <h1 className="text-xl md:text-2xl font-semibold text-white">Platform Management</h1>
+            <div className="mt-3 flex gap-2 overflow-x-auto md:hidden">
+              {navItems.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm ${
+                      active ? "bg-cyan-400/20 text-cyan-200" : "bg-white/5 text-slate-300"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </header>
+
+        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">{children}</div>
       </main>
     </div>
   );

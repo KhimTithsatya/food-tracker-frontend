@@ -77,7 +77,7 @@ export default function LoginPage() {
 
   const handleSocial = async (provider) => {
     setError("");
-    const result = await signIn(provider, { callbackUrl: "/auth/social-success" });
+    const result = await signIn(provider, { callbackUrl: `/auth/social-success?provider=${provider}` });
     if (result?.error) setError("Social login failed or not configured.");
   };
 
@@ -159,6 +159,11 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <div className="text-right">
+              <Link className="text-xs text-white/80 underline" href="/forgot-password">
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           <button
