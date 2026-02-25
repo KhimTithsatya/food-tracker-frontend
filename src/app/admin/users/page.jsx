@@ -278,7 +278,7 @@ export default function AdminUsersPage() {
           <select
             value={newUser.role}
             onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}
-            className="rounded-lg border border-white/15 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+            className={`rounded-lg border px-3 py-2 text-sm font-semibold ${roleSelectClasses(newUser.role)}`}
           >
             <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>
@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
                       disabled={busyUserId === user.id || currentUserId === user.id}
                       onChange={(e) => updateRole(user.id, e.target.value)}
                       onClick={(e) => e.stopPropagation()}
-                      className="rounded-lg border border-white/15 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-200 disabled:opacity-50"
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${roleSelectClasses(user.role)}`}
                     >
                       <option value="USER">USER</option>
                       <option value="ADMIN">ADMIN</option>
@@ -408,7 +408,7 @@ export default function AdminUsersPage() {
                   </button>
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <Info label="Role" value={selectedUser.role} />
+                  <Info label="Role" value={<RolePill role={selectedUser.role} />} />
                   <Info label="Providers" value={(selectedUser.authProviders || []).join(", ") || "-"} />
                   <Info label="Meals Tracked" value={selectedUser.mealsCount} />
                   <Info label="Foods Tracked" value={selectedUser.foodsTrackedCount} />
@@ -537,6 +537,22 @@ function Info({ label, value }) {
   );
 }
 
+function RolePill({ role }) {
+  const normalized = String(role || "USER").toUpperCase();
+  const isAdmin = normalized === "ADMIN";
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide ${
+        isAdmin
+          ? "border-cyan-300/60 bg-cyan-400/15 text-cyan-100"
+          : "border-violet-300/60 bg-violet-400/15 text-violet-100"
+      }`}
+    >
+      {normalized}
+    </span>
+  );
+}
+
 function formatDate(value) {
   if (!value) return "-";
   const date = new Date(value);
@@ -554,6 +570,7 @@ function toDataUrl(file) {
 }
 
 function Field({ label, value, onChange, type = "text", options = [] }) {
+  const isRoleSelect = type === "select" && options.includes("ADMIN") && options.includes("USER");
   return (
     <div>
       <label className="mb-1 block text-sm text-white/70">{label}</label>
@@ -561,7 +578,9 @@ function Field({ label, value, onChange, type = "text", options = [] }) {
         <select
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
+          className={`w-full rounded-lg border px-3 py-2 text-sm ${
+            isRoleSelect ? roleSelectClasses(value) : "border-white/15 bg-black/30 text-white"
+          }`}
         >
           {options.map((option) => (
             <option key={option} value={option}>
@@ -585,4 +604,12 @@ function avatarFallback(name) {
   const label = (name || "U").slice(0, 1).toUpperCase();
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='#1e293b'/><text x='50%' y='56%' dominant-baseline='middle' text-anchor='middle' fill='#e2e8f0' font-size='28' font-family='Arial'>${label}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+function roleSelectClasses(role) {
+  const normalized = String(role || "USER").toUpperCase();
+  if (normalized === "ADMIN") {
+    return "border-cyan-300/40 bg-cyan-500/15 text-cyan-100";
+  }
+  return "border-violet-300/40 bg-violet-500/15 text-violet-100";
 }

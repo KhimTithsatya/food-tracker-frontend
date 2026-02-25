@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
+import AnimatedInput from "../../components/auth/AnimatedInput";
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
@@ -139,26 +140,25 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm text-white/80">Email</label>
-            <input
-              className="w-full rounded-xl bg-black/30 border border-white/10 text-white px-4 py-3 outline-none focus:ring-2 focus:ring-white/20"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          <AnimatedInput
+            id="login-email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
 
           <div className="space-y-2">
-            <label className="text-sm text-white/80">Password</label>
-            <input
-              className="w-full rounded-xl bg-black/30 border border-white/10 text-white px-4 py-3 outline-none focus:ring-2 focus:ring-white/20"
+            <AnimatedInput
+              id="login-password"
+              label="Password"
               type="password"
-              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
             />
             <div className="text-right">
               <Link className="text-xs text-white/80 underline" href="/forgot-password">

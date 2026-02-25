@@ -68,6 +68,12 @@
       "namedRegex": "^/admin/meals(?:/)?$"
     },
     {
+      "page": "/admin/profile",
+      "regex": "^/admin/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/profile(?:/)?$"
+    },
+    {
       "page": "/admin/reports",
       "regex": "^/admin/reports(?:/)?$",
       "routeKeys": {},
@@ -86,6 +92,12 @@
       "namedRegex": "^/admin/users(?:/)?$"
     },
     {
+      "page": "/auth/social-success",
+      "regex": "^/auth/social\\-success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/social\\-success(?:/)?$"
+    },
+    {
       "page": "/dashboard",
       "regex": "^/dashboard(?:/)?$",
       "routeKeys": {},
@@ -96,6 +108,12 @@
       "regex": "^/foods(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/foods(?:/)?$"
+    },
+    {
+      "page": "/forgot-password",
+      "regex": "^/forgot\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/forgot\\-password(?:/)?$"
     },
     {
       "page": "/login",
@@ -110,6 +128,12 @@
       "namedRegex": "^/meals(?:/)?$"
     },
     {
+      "page": "/meals/new",
+      "regex": "^/meals/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/meals/new(?:/)?$"
+    },
+    {
       "page": "/profile",
       "regex": "^/profile(?:/)?$",
       "routeKeys": {},
@@ -120,6 +144,12 @@
       "regex": "^/register(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/register(?:/)?$"
+    },
+    {
+      "page": "/reset-password",
+      "regex": "^/reset\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reset\\-password(?:/)?$"
     }
   ],
   "dataRoutes": [],

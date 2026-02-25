@@ -2,6 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  DashboardIcon,
+  FireIcon,
+  FoodsIcon,
+  MealsIcon,
+  PlusIcon,
+  ProfileIcon,
+  SettingsIcon,
+  SpinnerIcon,
+  WarningIcon
+} from "../../components/user/Icons";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
 
@@ -174,19 +185,19 @@ export default function UserPage() {
             title="Total Meals"
             value={loading ? "..." : String(meals.length)}
             sub="meals logged"
-            icon="🍽️"
+            Icon={MealsIcon}
           />
           <StatCard
             title="Total Calories"
             value={loading ? "..." : String(totalCalories)}
             sub="from all meals"
-            icon="🔥"
+            Icon={FireIcon}
           />
           <StatCard
             title="Account Status"
             value={String(user?.role || "USER")}
             sub="user role"
-            icon="👤"
+            Icon={ProfileIcon}
           />
         </section>
 
@@ -195,21 +206,21 @@ export default function UserPage() {
           <ActionCard
             title="Log a Meal"
             desc="Add a new meal to your tracker"
-            icon="➕"
+            Icon={PlusIcon}
             onClick={() => setShowAddModal(true)}
             button="Add Meal"
           />
           <ActionCard
             title="View Foods"
             desc="Browse and manage your food items"
-            icon="🥗"
+            Icon={FoodsIcon}
             onClick={() => (window.location.href = "/foods")}
             button="View Foods"
           />
           <ActionCard
             title="Profile Settings"
             desc="Update your account and preferences"
-            icon="⚙️"
+            Icon={SettingsIcon}
             onClick={() => (window.location.href = "/profile")}
             button="Settings"
           />
@@ -220,7 +231,7 @@ export default function UserPage() {
           <div className="flex items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-semibold flex items-center gap-2">
-                <span>📊</span> Recent Meals
+                <DashboardIcon className="h-5 w-5 text-indigo-300" /> Recent Meals
               </h2>
               <p className="text-sm text-white/50 mt-1">Your latest meal entries</p>
             </div>
@@ -260,7 +271,7 @@ export default function UserPage() {
             {loading && (
               <div className="flex items-center justify-center py-8">
                 <div className="inline-flex items-center gap-2">
-                  <div className="animate-spin">⏳</div>
+                  <SpinnerIcon className="h-4 w-4 animate-spin" />
                   <span className="text-white/70">Loading your meals...</span>
                 </div>
               </div>
@@ -268,7 +279,10 @@ export default function UserPage() {
 
             {!loading && error && (
               <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-4 text-sm">
-                <p className="text-red-200 font-medium">⚠️ {error}</p>
+                <p className="text-red-200 font-medium inline-flex items-center gap-2">
+                  <WarningIcon className="h-4 w-4" />
+                  <span>{error}</span>
+                </p>
                 <p className="text-white/60 text-xs mt-2">
                   Please check your connection or contact support.
                 </p>
@@ -277,7 +291,7 @@ export default function UserPage() {
 
             {!loading && !error && meals.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="text-4xl mb-3">🍽️</div>
+                <MealsIcon className="h-10 w-10 mb-3 text-indigo-300" />
                 <p className="text-white/70 font-medium mb-2">No meals logged yet</p>
                 <p className="text-white/50 text-sm mb-4">
                   Start tracking by adding your first meal
@@ -401,7 +415,7 @@ export default function UserPage() {
   );
 }
 
-function StatCard({ title, value, sub, icon }) {
+function StatCard({ title, value, sub, Icon }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 hover:bg-white/10 transition">
       <div className="flex items-center justify-between">
@@ -410,18 +424,18 @@ function StatCard({ title, value, sub, icon }) {
           <p className="mt-3 text-4xl font-bold">{value}</p>
           <p className="mt-1 text-xs text-white/50">{sub}</p>
         </div>
-        <div className="text-3xl">{icon}</div>
+        <Icon className="h-8 w-8 text-indigo-300" />
       </div>
     </div>
   );
 }
 
-function ActionCard({ title, desc, button, onClick, icon }) {
+function ActionCard({ title, desc, button, onClick, Icon }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-indigo-500/30 hover:bg-indigo-500/5 transition">
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-2xl">{icon}</span>
+          <Icon className="h-6 w-6 text-indigo-300" />
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
         <p className="text-sm text-white/70">{desc}</p>

@@ -3,21 +3,50 @@
 import { useEffect, useState } from "react";
 import { userDashboard, userMeals } from "../../../services/user.api";
 
+const DASHBOARD_STATS_CACHE_KEY = "dashboard_stats_cache_v1";
+
 export default function Dashboard() {
-  const [data, setData] = useState(null);
+  const [stats, setStats] = useState(() => readCachedStats());
   const [meals, setMeals] = useState([]);
   const [calendarView, setCalendarView] = useState("daily");
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([userDashboard(), userMeals()])
-      .then(([dashboardData, mealsData]) => {
-        setData(dashboardData);
-        setMeals(Array.isArray(mealsData) ? mealsData : []);
+    let active = true;
+
+    Promise.allSettled([userDashboard(), userMeals()])
+      .then(([dashboardResult, mealsResult]) => {
+        if (!active) return;
+
+        const mealsData =
+          mealsResult.status === "fulfilled" && Array.isArray(mealsResult.value) ? mealsResult.value : [];
+        setMeals(mealsData);
+
+        const hasAnySuccess = dashboardResult.status === "fulfilled" || mealsResult.status === "fulfilled";
+        if (!hasAnySuccess) {
+          window.location.href = "/login";
+          return;
+        }
+
+        if (dashboardResult.status === "fulfilled" && dashboardResult.value) {
+          const normalized = normalizeStats(dashboardResult.value);
+          setStats(normalized);
+          writeCachedStats(normalized);
+          return;
+        }
+
+        const fallbackStats = buildStatsFromMeals(mealsData);
+        setStats(fallbackStats);
+        writeCachedStats(fallbackStats);
       })
-      .catch(() => (window.location.href = "/login"))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   if (loading) {
@@ -46,32 +75,36 @@ export default function Dashboard() {
         <p className="text-white/60">Welcome back! Here's your meal tracking overview.</p>
       </div>
 
-      {data ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-indigo-600">
-            <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase">Total Meals</h3>
-            <p className="text-3xl font-bold text-indigo-600">{data.totalMeals || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600">
-            <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase">Avg Calories</h3>
-            <p className="text-3xl font-bold text-green-600">{data.avgCalories || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-600">
-            <h3 className="text-sm font-semibold text-gray-600 mb-2 uppercase">Foods Tracked</h3>
-            <p className="text-3xl font-bold text-purple-600">{data.totalFoods || 0}</p>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
+          <h3 className="text-sm font-medium text-white/60 mb-2">Total Meals</h3>
+          <p className="text-3xl font-bold text-white">
+            <AnimatedNumber value={stats.totalMeals} />
+          </p>
         </div>
-      ) : null}
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
+          <h3 className="text-sm font-medium text-white/60 mb-2">Avg Calories</h3>
+          <p className="text-3xl font-bold text-indigo-400">
+            <AnimatedNumber value={stats.avgCalories} />
+          </p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
+          <h3 className="text-sm font-medium text-white/60 mb-2">Foods Tracked</h3>
+          <p className="text-3xl font-bold text-blue-400">
+            <AnimatedNumber value={stats.totalFoods} />
+          </p>
+        </div>
+      </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Meal Calendar</h2>
-          <div className="inline-flex rounded-md border border-gray-200 p-1 w-fit">
+          <h2 className="text-xl font-bold text-white">Meal Calendar</h2>
+          <div className="inline-flex rounded-md border border-white/15 bg-black/20 p-1 w-fit">
             <button
               type="button"
               onClick={() => setCalendarView("daily")}
               className={`px-4 py-2 text-sm font-medium rounded ${
-                isDaily ? "bg-indigo-600 text-white" : "text-gray-700 hover:bg-gray-100"
+                isDaily ? "bg-indigo-500 text-white" : "text-white/70 hover:bg-white/10"
               }`}
             >
               Daily
@@ -80,7 +113,7 @@ export default function Dashboard() {
               type="button"
               onClick={() => setCalendarView("weekly")}
               className={`px-4 py-2 text-sm font-medium rounded ${
-                !isDaily ? "bg-indigo-600 text-white" : "text-gray-700 hover:bg-gray-100"
+                !isDaily ? "bg-indigo-500 text-white" : "text-white/70 hover:bg-white/10"
               }`}
             >
               Weekly
@@ -92,25 +125,25 @@ export default function Dashboard() {
           <button
             type="button"
             onClick={() => setSelectedDate((current) => shiftDate(current, isDaily ? -1 : -7))}
-            className="px-3 py-2 rounded border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm"
+            className="px-3 py-2 rounded border border-white/20 bg-white/5 text-white/80 hover:bg-white/10 text-sm"
           >
             Previous
           </button>
           <button
             type="button"
             onClick={() => setSelectedDate(startOfDay(new Date()))}
-            className="px-3 py-2 rounded border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm"
+            className="px-3 py-2 rounded border border-white/20 bg-white/5 text-white/80 hover:bg-white/10 text-sm"
           >
             Today
           </button>
           <button
             type="button"
             onClick={() => setSelectedDate((current) => shiftDate(current, isDaily ? 1 : 7))}
-            className="px-3 py-2 rounded border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm"
+            className="px-3 py-2 rounded border border-white/20 bg-white/5 text-white/80 hover:bg-white/10 text-sm"
           >
             Next
           </button>
-          <p className="text-sm font-medium text-gray-600 ml-1">
+          <p className="text-sm font-medium text-white/70 ml-1">
             {isDaily ? formatDateLabel(selectedDate) : `Week of ${formatDateLabel(weekDays[0])}`}
           </p>
         </div>
@@ -118,17 +151,17 @@ export default function Dashboard() {
         {isDaily ? (
           <div className="space-y-3">
             {dailyMeals.length === 0 ? (
-              <p className="text-sm text-gray-500">No meals planned for this day.</p>
+              <p className="text-sm text-white/60">No meals planned for this day.</p>
             ) : (
               dailyMeals.map((meal) => (
-                <div key={meal.id} className="border border-gray-200 rounded-md p-4">
+                <div key={meal.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-gray-900">{meal.name || "Untitled Meal"}</p>
-                    <span className="text-sm text-indigo-700 bg-indigo-50 px-2 py-1 rounded">
+                    <p className="font-semibold text-white">{meal.name || "Untitled Meal"}</p>
+                    <span className="text-sm text-indigo-200 bg-indigo-400/20 px-2 py-1 rounded">
                       {typeLabel(meal.mealType)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-white/70 mt-2">
                     {meal.items?.length || 0} food item(s) • {getMealCalories(meal)} kcal
                   </p>
                 </div>
@@ -145,28 +178,109 @@ export default function Dashboard() {
                   setCalendarView("daily");
                   setSelectedDate(day);
                 }}
-                className="text-left border border-gray-200 rounded-md p-3 hover:border-indigo-300 hover:bg-indigo-50/40 transition"
+                className="text-left rounded-xl border border-white/10 bg-black/20 p-3 hover:border-indigo-300/50 hover:bg-indigo-500/10 transition"
               >
-                <p className="text-xs uppercase text-gray-500">{day.toLocaleDateString("en-US", { weekday: "short" })}</p>
-                <p className="text-sm font-semibold text-gray-900">{formatShortDate(day)}</p>
-                <p className="text-xs text-gray-600 mt-2">{items.length} meal(s)</p>
-                <p className="text-xs text-gray-600">{items.reduce((sum, meal) => sum + getMealCalories(meal), 0)} kcal</p>
+                <p className="text-xs uppercase text-white/50">{day.toLocaleDateString("en-US", { weekday: "short" })}</p>
+                <p className="text-sm font-semibold text-white">{formatShortDate(day)}</p>
+                <p className="text-xs text-white/70 mt-2">{items.length} meal(s)</p>
+                <p className="text-xs text-white/70">{items.reduce((sum, meal) => sum + getMealCalories(meal), 0)} kcal</p>
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {data && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Details</h2>
-          <pre className="bg-gray-50 p-4 rounded text-sm overflow-auto text-gray-700">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
+      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
+        <h2 className="text-xl font-bold text-white mb-4">Details</h2>
+        <pre className="rounded-xl border border-white/10 bg-black/30 p-4 text-sm overflow-auto text-white/70">
+          {JSON.stringify(stats, null, 2)}
+        </pre>
+      </div>
     </div>
   );
+}
+
+function readCachedStats() {
+  if (typeof window === "undefined") return emptyStats();
+  try {
+    const raw = localStorage.getItem(DASHBOARD_STATS_CACHE_KEY);
+    if (!raw) return emptyStats();
+    return normalizeStats(JSON.parse(raw));
+  } catch {
+    return emptyStats();
+  }
+}
+
+function writeCachedStats(value) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(DASHBOARD_STATS_CACHE_KEY, JSON.stringify(normalizeStats(value)));
+}
+
+function normalizeStats(value) {
+  return {
+    totalMeals: Number(value?.totalMeals) || 0,
+    avgCalories: Number(value?.avgCalories) || 0,
+    totalFoods: Number(value?.totalFoods) || 0,
+    totalCalories: Number(value?.totalCalories) || 0
+  };
+}
+
+function emptyStats() {
+  return {
+    totalMeals: 0,
+    avgCalories: 0,
+    totalFoods: 0,
+    totalCalories: 0
+  };
+}
+
+function buildStatsFromMeals(meals) {
+  const list = Array.isArray(meals) ? meals : [];
+  const totalMeals = list.length;
+  const totalCalories = list.reduce((sum, meal) => sum + getMealCalories(meal), 0);
+  const avgCalories = totalMeals ? Math.round(totalCalories / totalMeals) : 0;
+  const uniqueFoods = new Set();
+
+  list.forEach((meal) => {
+    if (!Array.isArray(meal?.items)) return;
+    meal.items.forEach((item) => {
+      if (item?.food?.id != null) uniqueFoods.add(String(item.food.id));
+    });
+  });
+
+  return {
+    totalMeals,
+    avgCalories,
+    totalFoods: uniqueFoods.size,
+    totalCalories
+  };
+}
+
+function AnimatedNumber({ value, durationMs = 900 }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const target = Number(value) || 0;
+    let frame = 0;
+    const startedAt = performance.now();
+    const from = display;
+
+    const tick = (now) => {
+      const elapsed = now - startedAt;
+      const progress = Math.min(1, elapsed / durationMs);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const next = Math.round(from + (target - from) * eased);
+      setDisplay(next);
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, durationMs]);
+
+  return <>{display.toLocaleString()}</>;
 }
 
 function startOfDay(value) {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { MealsIcon, SpinnerIcon, WarningIcon } from "../../../components/user/Icons";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
 const MEAL_TYPES = ["BREAKFAST", "LUNCH", "DINNER", "SNACK", "OTHER"];
@@ -83,6 +84,10 @@ export default function MealPage() {
   const totalCalories = useMemo(
     () => meals.reduce((sum, m) => sum + getMealCalories(m), 0),
     [meals]
+  );
+  const avgCalories = useMemo(
+    () => (meals.length > 0 ? Math.round(totalCalories / meals.length) : 0),
+    [meals.length, totalCalories]
   );
 
   const filteredAndSortedMeals = useMemo(() => {
@@ -304,7 +309,7 @@ export default function MealPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="inline-flex items-center gap-2">
-          <div className="animate-spin">⏳</div>
+          <SpinnerIcon className="h-4 w-4 animate-spin" />
           <span className="text-white/70">Loading meals...</span>
         </div>
       </div>
@@ -315,7 +320,10 @@ export default function MealPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-white">🍽️ Meal Planner</h1>
+          <h1 className="text-4xl font-bold text-white inline-flex items-center gap-3">
+            <MealsIcon className="h-9 w-9 text-indigo-300" />
+            Meal Planner
+          </h1>
           <p className="text-white/60 mt-2">Plan meals, add foods, and track calories per meal</p>
         </div>
         <button
@@ -329,7 +337,10 @@ export default function MealPage() {
 
       {error && (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm">
-          <p className="text-red-200 font-medium">⚠️ {error}</p>
+          <p className="text-red-200 font-medium inline-flex items-center gap-2">
+            <WarningIcon className="h-4 w-4" />
+            <span>{error}</span>
+          </p>
         </div>
       )}
 
@@ -337,16 +348,20 @@ export default function MealPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
             <p className="text-sm text-white/60 font-medium">Total Meal Plans</p>
-            <p className="mt-2 text-3xl font-bold">{meals.length}</p>
+            <p className="mt-2 text-3xl font-bold">
+              <AnimatedNumber value={meals.length} />
+            </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
             <p className="text-sm text-white/60 font-medium">Tracked Calories</p>
-            <p className="mt-2 text-3xl font-bold text-indigo-400">{totalCalories}</p>
+            <p className="mt-2 text-3xl font-bold text-indigo-400">
+              <AnimatedNumber value={totalCalories} />
+            </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
             <p className="text-sm text-white/60 font-medium">Avg Calories / Meal</p>
             <p className="mt-2 text-3xl font-bold text-blue-400">
-              {Math.round(totalCalories / meals.length)}
+              <AnimatedNumber value={avgCalories} />
             </p>
           </div>
         </div>
@@ -355,7 +370,7 @@ export default function MealPage() {
       <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
         {meals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="text-4xl mb-3">🍽️</div>
+            <MealsIcon className="h-10 w-10 mb-3 text-indigo-300" />
             <p className="text-white/70 font-medium mb-2">No meal plans yet</p>
             <p className="text-white/50 text-sm mb-4">Create a meal and add foods to start tracking</p>
             <button
@@ -675,6 +690,33 @@ export default function MealPage() {
       )}
     </div>
   );
+}
+
+function AnimatedNumber({ value, durationMs = 900 }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const target = Number(value) || 0;
+    const from = display;
+    let frame = 0;
+    const startedAt = performance.now();
+
+    const tick = (now) => {
+      const elapsed = now - startedAt;
+      const progress = Math.min(1, elapsed / durationMs);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const next = Math.round(from + (target - from) * eased);
+      setDisplay(next);
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, durationMs]);
+
+  return <>{display.toLocaleString()}</>;
 }
 
 function getMealCalories(meal) {

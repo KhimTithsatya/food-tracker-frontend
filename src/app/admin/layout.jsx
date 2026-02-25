@@ -18,6 +18,7 @@ const navItems = [
 export default function AdminLayout({ children }) {
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState(null);
+  const [theme, setTheme] = useState("dark");
   const pathname = usePathname();
 
   useEffect(() => {
@@ -41,8 +42,18 @@ export default function AdminLayout({ children }) {
       setUser(null);
     }
 
+    const savedTheme = localStorage.getItem("theme") === "light" ? "light" : "dark";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+
     setReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme, ready]);
 
   if (!ready) {
     return (
@@ -101,6 +112,12 @@ export default function AdminLayout({ children }) {
         <div className="p-4 border-t border-white/10">
           <p className="text-xs text-slate-400">Signed in as</p>
           <p className="text-sm font-semibold text-white truncate">{user?.name || "Admin"}</p>
+          <div className="mt-3">
+            <ThemeSwitch
+              checked={theme === "light"}
+              onToggle={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+            />
+          </div>
           <button
             onClick={handleLogout}
             className="mt-3 w-full rounded-xl bg-rose-500/90 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 transition"
@@ -130,6 +147,10 @@ export default function AdminLayout({ children }) {
                   </Link>
                 );
               })}
+              <ThemeSwitch
+                checked={theme === "light"}
+                onToggle={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+              />
             </div>
           </div>
         </header>
@@ -137,5 +158,51 @@ export default function AdminLayout({ children }) {
         <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">{children}</div>
       </main>
     </div>
+  );
+}
+
+function ThemeSwitch({ checked, onToggle }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={onToggle}
+      className="inline-flex items-center gap-2"
+    >
+      <span className="text-xs text-slate-300">{checked ? "Light" : "Dark"}</span>
+      <span
+        className={`relative inline-flex h-6 w-11 items-center rounded-full border transition ${
+          checked
+            ? "border-amber-300/50 bg-amber-400/25"
+            : "border-white/20 bg-white/10"
+        }`}
+      >
+        <span
+          className={`absolute left-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-900 shadow transition-transform ${
+            checked ? "translate-x-5" : ""
+          }`}
+        >
+          {checked ? <SunIcon /> : <MoonIcon />}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+    </svg>
   );
 }

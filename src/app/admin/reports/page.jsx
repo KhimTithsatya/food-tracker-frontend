@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
@@ -160,15 +160,21 @@ export default function AdminReportsPage() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-cyan-300/20 bg-gradient-to-br from-cyan-400/15 to-cyan-400/5 p-6">
           <h3 className="text-sm uppercase tracking-wider text-cyan-200/80">Total Users</h3>
-          <p className="mt-3 text-3xl font-semibold text-white">{stats.users}</p>
+          <p className="mt-3 text-3xl font-semibold text-white">
+            <AnimatedNumber value={stats.users} />
+          </p>
         </div>
         <div className="rounded-2xl border border-emerald-300/20 bg-gradient-to-br from-emerald-400/15 to-emerald-400/5 p-6">
           <h3 className="text-sm uppercase tracking-wider text-emerald-200/80">Total Foods</h3>
-          <p className="mt-3 text-3xl font-semibold text-white">{stats.foods}</p>
+          <p className="mt-3 text-3xl font-semibold text-white">
+            <AnimatedNumber value={stats.foods} />
+          </p>
         </div>
         <div className="rounded-2xl border border-indigo-300/20 bg-gradient-to-br from-indigo-400/15 to-indigo-400/5 p-6">
           <h3 className="text-sm uppercase tracking-wider text-indigo-200/80">Total Meals</h3>
-          <p className="mt-3 text-3xl font-semibold text-white">{stats.meals}</p>
+          <p className="mt-3 text-3xl font-semibold text-white">
+            <AnimatedNumber value={stats.meals} />
+          </p>
         </div>
       </div>
 
@@ -260,4 +266,33 @@ function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleString();
+}
+
+function AnimatedNumber({ value, durationMs = 900 }) {
+  const [display, setDisplay] = useState(0);
+  const displayRef = useRef(0);
+
+  useEffect(() => {
+    const target = Number(value) || 0;
+    const from = displayRef.current;
+    let frame = 0;
+    const startedAt = performance.now();
+
+    const tick = (now) => {
+      const elapsed = now - startedAt;
+      const progress = Math.min(1, elapsed / durationMs);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const next = Math.round(from + (target - from) * eased);
+      displayRef.current = next;
+      setDisplay(next);
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, durationMs]);
+
+  return <>{display.toLocaleString()}</>;
 }

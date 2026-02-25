@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SpinnerIcon } from "../../../components/user/Icons";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
 
@@ -16,6 +17,7 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState(false);
+  const [openSessionId, setOpenSessionId] = useState(null);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -255,11 +257,39 @@ export default function ProfilePage() {
     window.location.href = "/login";
   };
 
+  const handleAutoCalculateTargets = () => {
+    setError("");
+    setSuccess("");
+
+    const result = calculateNutritionTargets({
+      weightKg: formData.weightKg,
+      heightCm: formData.heightCm,
+      age: formData.age,
+      sex: formData.sex,
+      activityLevel: formData.activityLevel,
+      goalType: formData.goalType
+    });
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      dailyCalorieTarget: result.targets.dailyCalories,
+      proteinGoal: result.targets.proteinGoal,
+      carbsGoal: result.targets.carbsGoal,
+      fatGoal: result.targets.fatGoal
+    }));
+    setSuccess("Targets calculated. Review and save profile.");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="inline-flex items-center gap-2">
-          <div className="animate-spin">⏳</div>
+          <SpinnerIcon className="h-4 w-4 animate-spin" />
           <span className="text-white/70">Loading profile...</span>
         </div>
       </div>
@@ -337,6 +367,23 @@ export default function ProfilePage() {
             <Input label="Carbs Goal (g)" type="number" value={formData.carbsGoal} disabled={!editing} onChange={(v) => setFormData((p) => ({ ...p, carbsGoal: v }))} />
             <Input label="Fat Goal (g)" type="number" value={formData.fatGoal} disabled={!editing} onChange={(v) => setFormData((p) => ({ ...p, fatGoal: v }))} />
           </div>
+
+          {editing ? (
+            <div className="rounded-lg border border-indigo-300/30 bg-indigo-500/10 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-indigo-100">
+                  Auto-fill calories and macros from your profile, activity level, and goal.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleAutoCalculateTargets}
+                  className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+                >
+                  Auto-calculate targets
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid gap-2 md:grid-cols-2">
             <label className="flex items-center gap-2 text-sm text-white/80">
@@ -430,13 +477,39 @@ export default function ProfilePage() {
           {sessions.length ? (
             sessions.map((session) => (
               <div key={session.id} className="rounded-lg border border-white/10 bg-black/20 p-3 text-sm text-white/80">
-                <p className="font-semibold text-white">
-                  {session.isCurrent ? "Current Session" : "Active Session"}
-                </p>
-                <p>User Agent: {session.userAgent || "-"}</p>
-                <p>IP: {session.ipAddress || "-"}</p>
-                <p>Created: {formatDate(session.createdAt)}</p>
-                <p>Last Active: {formatDate(session.lastActiveAt)}</p>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-white">
+                      {session.isCurrent ? "Current Session" : "Active Session"}
+                    </p>
+                    <p className="text-xs text-white/50">Last Active: {formatDate(session.lastActiveAt)}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOpenSessionId((prev) => (prev === session.id ? null : session.id))}
+                    className="inline-flex items-center gap-1 rounded-md border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs text-white/80 hover:bg-white/10"
+                  >
+                    {openSessionId === session.id ? "Hide details" : "Show details"}
+                    <svg
+                      viewBox="0 0 24 24"
+                      className={`h-3.5 w-3.5 transition-transform ${openSessionId === session.id ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                </div>
+                {openSessionId === session.id ? (
+                  <div className="mt-3 space-y-1 border-t border-white/10 pt-3">
+                    <p>User Agent: {session.userAgent || "-"}</p>
+                    <p>IP: {session.ipAddress || "-"}</p>
+                    <p>Created: {formatDate(session.createdAt)}</p>
+                    <p>Last Active: {formatDate(session.lastActiveAt)}</p>
+                  </div>
+                ) : null}
               </div>
             ))
           ) : (
@@ -479,6 +552,94 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
+
+function calculateNutritionTargets(input) {
+  const weightKg = Number(input?.weightKg);
+  const heightCm = Number(input?.heightCm);
+  const age = Number(input?.age);
+  const activityLevel = String(input?.activityLevel || "").toUpperCase();
+  const goalType = String(input?.goalType || "").toUpperCase();
+  const sex = normalizeSex(input?.sex);
+
+  if (!Number.isFinite(weightKg) || weightKg <= 0) {
+    return { ok: false, error: "Enter a valid weight (kg) before auto-calculating targets." };
+  }
+  if (!Number.isFinite(heightCm) || heightCm <= 0) {
+    return { ok: false, error: "Enter a valid height (cm) before auto-calculating targets." };
+  }
+  if (!Number.isFinite(age) || age <= 0) {
+    return { ok: false, error: "Enter a valid age before auto-calculating targets." };
+  }
+  if (!sex) {
+    return { ok: false, error: "Enter sex as male or female before auto-calculating targets." };
+  }
+  if (!ACTIVITY_OPTIONS.includes(activityLevel)) {
+    return { ok: false, error: "Choose an activity level before auto-calculating targets." };
+  }
+  if (!GOAL_OPTIONS.includes(goalType)) {
+    return { ok: false, error: "Choose a goal type before auto-calculating targets." };
+  }
+
+  const activityMultiplier = {
+    SEDENTARY: 1.2,
+    LIGHT: 1.375,
+    MODERATE: 1.55,
+    ACTIVE: 1.725,
+    VERY_ACTIVE: 1.9
+  }[activityLevel];
+
+  const bmr = sex === "male"
+    ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+    : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+  const maintenanceCalories = bmr * activityMultiplier;
+
+  const calorieAdjustment = {
+    LOSE: -400,
+    MAINTAIN: 0,
+    GAIN: 300
+  }[goalType];
+
+  const dailyCalories = clamp(Math.round((maintenanceCalories + calorieAdjustment) / 10) * 10, 1200, 5000);
+
+  const proteinPerKg = {
+    LOSE: 2,
+    MAINTAIN: 1.6,
+    GAIN: 1.8
+  }[goalType];
+  const proteinGoal = Math.round(weightKg * proteinPerKg);
+
+  const fatRatio = {
+    LOSE: 0.25,
+    MAINTAIN: 0.3,
+    GAIN: 0.28
+  }[goalType];
+  const fatGoal = Math.round((dailyCalories * fatRatio) / 9);
+
+  const remainingCalories = Math.max(0, dailyCalories - proteinGoal * 4 - fatGoal * 9);
+  const carbsGoal = Math.round(remainingCalories / 4);
+
+  return {
+    ok: true,
+    targets: {
+      dailyCalories,
+      proteinGoal,
+      carbsGoal,
+      fatGoal
+    }
+  };
+}
+
+function normalizeSex(value) {
+  const text = String(value || "").trim().toLowerCase();
+  if (!text) return null;
+  if (text === "m" || text.startsWith("male")) return "male";
+  if (text === "f" || text.startsWith("female")) return "female";
+  return null;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function Input({ label, value, onChange, type = "text", disabled = false }) {

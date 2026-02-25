@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FoodsIcon, SpinnerIcon } from "../../../components/user/Icons";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -154,7 +155,7 @@ export default function FoodPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="inline-flex items-center gap-2">
-          <div className="animate-spin">⏳</div>
+          <SpinnerIcon className="h-4 w-4 animate-spin" />
           <span className="text-white/70">Loading foods...</span>
         </div>
       </div>
@@ -164,7 +165,10 @@ export default function FoodPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-4xl font-bold text-white">🥗 Foods Library</h1>
+        <h1 className="text-4xl font-bold text-white inline-flex items-center gap-3">
+          <FoodsIcon className="h-9 w-9 text-indigo-300" />
+          Foods Library
+        </h1>
         <p className="text-white/60 mt-2">Manage your food database and calories information</p>
       </div>
 
@@ -172,7 +176,7 @@ export default function FoodPage() {
         <div className="lg:col-span-1">
           <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 sticky top-24">
             <h2 className="text-xl font-bold text-white mb-4">
-              {editId ? "✏️ Edit Food" : "➕ Add New Food"}
+              {editId ? "Edit Food" : "Add New Food"}
             </h2>
 
             {error && (
@@ -263,7 +267,7 @@ export default function FoodPage() {
 
             {foods.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="text-4xl mb-3">🥗</div>
+                <FoodsIcon className="h-10 w-10 mb-3 text-indigo-300" />
                 <p className="text-white/70 font-medium mb-2">No foods yet</p>
                 <p className="text-white/50 text-sm">Add your first food to get started</p>
               </div>
