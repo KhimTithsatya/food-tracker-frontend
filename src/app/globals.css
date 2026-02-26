@@ -259,6 +259,29 @@ html[data-theme="light"] .text-white\/60 {
   color: #334155 !important;
 }
 
+html[data-theme="light"] .text-white\/80 {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .text-slate-200,
+html[data-theme="light"] .text-slate-300,
+html[data-theme="light"] .text-slate-400 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .text-cyan-100,
+html[data-theme="light"] .text-cyan-200,
+html[data-theme="light"] .text-violet-100,
+html[data-theme="light"] .text-violet-200,
+html[data-theme="light"] .text-rose-200,
+html[data-theme="light"] .text-emerald-200 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .file\:text-cyan-100::file-selector-button {
+  color: #0f172a !important;
+}
+
 html[data-theme="light"] .text-white\/95,
 html[data-theme="light"] .text-white\/90,
 html[data-theme="light"] .text-white\/80 {
