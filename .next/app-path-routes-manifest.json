@@ -1,4 +1,5 @@
 {
+  "/(user)/about/page": "/about",
   "/(user)/dashboard/page": "/dashboard",
   "/(user)/foods/page": "/foods",
   "/(user)/meals/new/page": "/meals/new",

@@ -14,6 +14,7 @@ export default function MealPage() {
   const [newMeal, setNewMeal] = useState({
     userId: "",
     name: "",
+    description: "",
     mealType: "OTHER",
     plannedFor: ""
   });
@@ -81,7 +82,7 @@ export default function MealPage() {
       } else {
         setMeals((prev) => [data, ...prev]);
       }
-      setNewMeal({ userId: "", name: "", mealType: "OTHER", plannedFor: "" });
+      setNewMeal({ userId: "", name: "", description: "", mealType: "OTHER", plannedFor: "" });
       setEditMealId(null);
     } catch (createError) {
       setError(createError.message || "Failed to create meal");
@@ -95,6 +96,7 @@ export default function MealPage() {
     setNewMeal({
       userId: String(meal.userId || meal.user?.id || ""),
       name: meal.name || "",
+      description: meal.description || "",
       mealType: meal.mealType || "OTHER",
       plannedFor: meal.plannedFor ? new Date(meal.plannedFor).toISOString().slice(0, 10) : ""
     });
@@ -103,7 +105,7 @@ export default function MealPage() {
 
   const cancelEdit = () => {
     setEditMealId(null);
-    setNewMeal({ userId: "", name: "", mealType: "OTHER", plannedFor: "" });
+    setNewMeal({ userId: "", name: "", description: "", mealType: "OTHER", plannedFor: "" });
   };
 
   const deleteMeal = async (id) => {
@@ -145,7 +147,7 @@ export default function MealPage() {
 
       <form onSubmit={createMeal} className="rounded-2xl border border-white/10 bg-white/5 p-5">
         <h3 className="text-lg font-semibold text-white">{editMealId ? "Edit Meal" : "Add Meal"}</h3>
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-6">
           <select
             value={newMeal.userId}
             onChange={(e) => setNewMeal((p) => ({ ...p, userId: e.target.value }))}
@@ -163,6 +165,13 @@ export default function MealPage() {
             onChange={(e) => setNewMeal((p) => ({ ...p, name: e.target.value }))}
             placeholder="Meal name"
             className="rounded-lg border border-white/15 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+          />
+          <input
+            value={newMeal.description}
+            onChange={(e) => setNewMeal((p) => ({ ...p, description: e.target.value }))}
+            placeholder="Description (optional)"
+            className="rounded-lg border border-white/15 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+            maxLength={1000}
           />
           <select
             value={newMeal.mealType}
@@ -209,6 +218,7 @@ export default function MealPage() {
               <thead className="border-b border-white/10 bg-white/5">
                 <tr>
                   <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-slate-300">Meal</th>
+                  <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-slate-300">Description</th>
                   <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-slate-300">User</th>
                   <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-slate-300">Date</th>
                   <th className="px-5 py-3 text-left text-xs uppercase tracking-wider text-slate-300">Type</th>
@@ -221,6 +231,7 @@ export default function MealPage() {
                   return (
                     <tr key={meal.id} className="hover:bg-white/5">
                       <td className="px-5 py-4 text-sm font-medium text-white">{meal.name}</td>
+                      <td className="px-5 py-4 text-sm text-slate-300">{meal.description || "-"}</td>
                       <td className="px-5 py-4 text-sm text-slate-300">
                         {meal.user?.name || "Unknown"}{" "}
                         <span className="text-slate-500">({meal.user?.email || "-"})</span>

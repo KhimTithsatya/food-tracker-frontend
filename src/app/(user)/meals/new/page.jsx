@@ -9,6 +9,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5001";
 export default function NewMealPage() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -35,7 +36,10 @@ export default function NewMealPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || null
+        }),
       });
 
       if (!res.ok) {
@@ -84,6 +88,20 @@ export default function NewMealPage() {
               placeholder="e.g. Breakfast, Chicken Salad"
               className="w-full rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">
+              Description (optional)
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add a short note about the meal"
+              rows={3}
+              maxLength={1000}
+              className="w-full rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 

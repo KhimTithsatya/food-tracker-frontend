@@ -11,6 +11,21 @@ function backendBaseUrl() {
   return process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 }
 
+function slimUser(user) {
+  if (!user) return null;
+  return {
+    id: user.id ?? null,
+    name: user.name || null,
+    email: user.email || null,
+    role: String(user.role || "USER").toUpperCase(),
+    authProviders: Array.isArray(user.authProviders)
+      ? user.authProviders
+      : user.authProviders
+      ? [String(user.authProviders)]
+      : []
+  };
+}
+
 const providers = [];
 
 // Social providers only if configured
@@ -53,10 +68,7 @@ providers.push(
       const data = await res.json();
       if (!res.ok) return null;
 
-      return {
-        ...data.user,
-        backendToken: data.token,
-      };
+      return slimUser(data.user);
     },
   })
 );
@@ -66,11 +78,11 @@ const handler = NextAuth({
   providers,
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.user = user;
+      if (user) token.user = slimUser(user);
       return token;
     },
     async session({ session, token }) {
-      session.user = token.user;
+      session.user = slimUser(token.user);
       return session;
     },
   },

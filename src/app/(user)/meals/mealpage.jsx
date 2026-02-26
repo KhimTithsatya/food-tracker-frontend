@@ -26,6 +26,7 @@ export default function MealPage() {
   const [savingMeal, setSavingMeal] = useState(false);
   const [editingMealId, setEditingMealId] = useState(null);
   const [mealName, setMealName] = useState("");
+  const [mealDescription, setMealDescription] = useState("");
   const [mealType, setMealType] = useState("OTHER");
   const [plannedFor, setPlannedFor] = useState("");
 
@@ -137,6 +138,7 @@ export default function MealPage() {
   const openCreateModal = () => {
     setEditingMealId(null);
     setMealName("");
+    setMealDescription("");
     setMealType("OTHER");
     setPlannedFor(toInputDate(new Date().toISOString()));
     setError("");
@@ -146,6 +148,7 @@ export default function MealPage() {
   const openEditModal = (meal) => {
     setEditingMealId(meal.id);
     setMealName(meal.name || "");
+    setMealDescription(meal.description || "");
     setMealType(meal?.mealType || "OTHER");
     setPlannedFor(toInputDate(meal?.plannedFor));
     setError("");
@@ -186,6 +189,7 @@ export default function MealPage() {
         token,
         body: JSON.stringify({
           name: mealName.trim(),
+          description: mealDescription.trim() || null,
           mealType,
           plannedFor: plannedFor || null
         })
@@ -200,6 +204,7 @@ export default function MealPage() {
 
       setEditingMealId(null);
       setMealName("");
+      setMealDescription("");
       setMealType("OTHER");
       setPlannedFor("");
       setShowAddModal(false);
@@ -443,7 +448,12 @@ export default function MealPage() {
                   <tbody className="divide-y divide-white/5">
                     {filteredAndSortedMeals.map((meal) => (
                       <tr key={meal.id} className="hover:bg-white/5 transition">
-                        <td className="px-4 py-3 font-medium">{meal.name || "Untitled Meal"}</td>
+                        <td className="px-4 py-3">
+                          <p className="font-medium">{meal.name || "Untitled Meal"}</p>
+                          {meal.description ? (
+                            <p className="mt-1 text-xs text-white/60">{meal.description}</p>
+                          ) : null}
+                        </td>
                         <td className="px-4 py-3 text-cyan-300 text-xs font-semibold">
                           {typeLabel(meal?.mealType)}
                         </td>
@@ -504,6 +514,7 @@ export default function MealPage() {
                   setShowAddModal(false);
                   setEditingMealId(null);
                   setMealName("");
+                  setMealDescription("");
                   setMealType("OTHER");
                   setPlannedFor("");
                 }}
@@ -523,6 +534,18 @@ export default function MealPage() {
                   placeholder="e.g. Monday Breakfast"
                   className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-white/70">Description (Optional)</label>
+                <textarea
+                  value={mealDescription}
+                  onChange={(e) => setMealDescription(e.target.value)}
+                  placeholder="Add notes about this meal plan..."
+                  maxLength={1000}
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
