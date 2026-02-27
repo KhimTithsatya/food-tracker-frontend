@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
 import AnimatedInput from "../../components/auth/AnimatedInput";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE || (process.env.NODE_ENV === "development" ? "http://localhost:5001" : "");
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:5001/api";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE || (process.env.NODE_ENV === "development" ? "http://localhost:5001" : "");
+const API_URL = `${API_BASE}/api`;
 
 export const api = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");

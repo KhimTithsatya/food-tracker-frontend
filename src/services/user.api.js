@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:5001/api/users";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE || (process.env.NODE_ENV === "development" ? "http://localhost:5001" : "");
+const BASE_URL = `${API_BASE}/api/users`;
 
 function getToken() {
   if (typeof window === "undefined") return null;
